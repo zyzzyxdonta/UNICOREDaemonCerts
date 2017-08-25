@@ -10,14 +10,14 @@ Call CreateDaemonCerts.py without parameters to show all parameters and their de
 Usage is: CreateDaemonCerts.py parameter2=value2 parameter2=value2.
 A typical command to generate Daemon Certs for all UNICORE server daemons would be:
 
-    CreateDaemonCerts.py FQDN=int-bionano.it.kit.edu \
+    CreateDaemonCerts.py FQDN=myhost.domain.com \
                         cert.email=admin@your_mail.de \
                         "cert.OrganizationalUnit=IT Services" \
-                        "cert.Organization=Nanomatch GmbH" \
+                        "cert.Organization=NM GmbH" \
                         cert.Country=DE \
                         cert.Locality=Karlsruhe \
                         "cert.State=BW" \
-                        GCID=NANO-SITE 
+                        GCID=MY-SITE 
 
                         
 ## Requirements
