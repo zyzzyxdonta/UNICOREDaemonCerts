@@ -4,8 +4,10 @@
 UNICOREDaemonCerts creates the certificates and private keys for standard UNICORE installations. The output paths and keystore passes are set to the ones used in a standard UNICORE install.
 
 ## Usage:
-CreateDaemonCerts.py parameter2=value2 parameter2=value2. A list of all parameters follows:
 
+Call CreateDaemonCerts.py without parameters to show all parameters and their default values.
+
+Usage is: CreateDaemonCerts.py parameter2=value2 parameter2=value2.
 A typical command to generate Daemon Certs for all UNICORE server daemons would be:
 
     CreateDaemonCerts.py FQDN=int-bionano.it.kit.edu \
