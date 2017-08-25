@@ -71,7 +71,7 @@ class DaemonCerts(object):
 
     def make_truststore_dir(self):
         cert_path = self.dcs.get_value('directory.certs')
-        truststore_path = join(cert_path, "truststore")
+        truststore_path = join(cert_path, "trusted")
         mkdir_p(truststore_path)
         return truststore_path
 
@@ -248,9 +248,7 @@ class DaemonCerts(object):
             out.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode("UTF-8"))
 
         #Here we save the pem again in the trusted directory:
-        certpath = self.dcs.get_value("directory.certs")
-        trustedpath = join(certpath,"trusted")
-        mkdir_p(trustedpath)
+        trustedpath = self.make_truststore_dir()
         trustedpem = join(trustedpath,"cacert.pem")
         with open(trustedpem, "w") as out:
             out.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode("UTF-8"))
