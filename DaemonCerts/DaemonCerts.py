@@ -23,6 +23,7 @@ class DaemonCerts(object):
         except Exception as e:
             self.write_info_text()
             raise
+        self.dcs.finalize()
 
         self.servers = [ "GATEWAY",
                          "XUUDB",

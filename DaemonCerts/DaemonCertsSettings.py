@@ -52,3 +52,6 @@ class DaemonCertsSettings(AbstractSettings):
         for valuename,default,explanation in defaults:
             self._add_default(valuename,default,explanation)
 
+    def finalize(self):
+        super(DaemonCertsSettings,self)._finish_parsing()
+
