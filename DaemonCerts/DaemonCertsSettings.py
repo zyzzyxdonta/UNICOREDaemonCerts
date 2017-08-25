@@ -44,7 +44,9 @@ class DaemonCertsSettings(AbstractSettings):
             ('GCID','CLUSTER-SITE','GCID of the UNICORE site. Only required if using XUUDB'),
 
             ('directory.certs','./certs','Directory where all the certificates will be put'),
-            ('directory.ca', './CA', 'Directory where the self signed CA will be put')
+            ('directory.ca', './CA', 'Directory where the self signed CA will be put'),
+            ('directory.support', './supportfiles', 'Directory where supporting information will be put'),
+            ('directory.unicore', './unicore', 'Directory where changes to the template configurations should be put')
         ]
 
         for valuename,default,explanation in defaults:
