@@ -31,9 +31,13 @@ A typical command to generate Daemon Certs for all UNICORE server daemons would 
 * Individiual daemon domains can specified using: Domains.SERVER=FQDN. This is completely optional. Don't do it unless you really need it. (You need it, if different daemons run on different servers).
 
 ## Output
-The program will generate the certs (also the CA certs, if not existing) and the following files:
+The program will generate the certs (also the CA certs, if not existing) and the following files.
+In settings[directory.support]:
 * rfc4514_dns.txt contains the generated server DNs in the rfc4514 format.
 * xuudb_commands.sh contains the server DNs again including the commands, which have to be executed to add them to XUUDB.
+In settings[directory.unicore]:
+* The TSI certficates in PEM format
+* Changes to all config files, which require a change to the DN. If these config files already exist, they are updating. If they don't exist, new files are written containing only the lines, which need to be updated.
 
 ## Using a existing CA
 In this case you need to have the following filestructure in your directory.CA=CA_DIR directory.
