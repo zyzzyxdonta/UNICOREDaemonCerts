@@ -22,6 +22,7 @@ class DaemonCertsSettings(AbstractSettings):
             ('Domains.GATEWAY','sameas:FQDN',"FQDN of the machine running GATEWAY"),
             ('Domains.WORKFLOW','sameas:FQDN',"FQDN of the machine running WORKFLOW"),
             ('Domains.SERVORCH','sameas:FQDN',"FQDN of the machine running SERVORCH"),
+            ('Domains.TSI','sameas:FQDN',"FQDN of the machine running TSI"),
 
             ('KeystorePass.UNITY','the!uvos',"Password for the p12 keystore holding the certificate of UNITY"),
             ('KeystorePass.UNICOREX','the!njs',"Password for the p12 keystore holding the certificate of UNICOREX"),
@@ -30,6 +31,7 @@ class DaemonCertsSettings(AbstractSettings):
             ('KeystorePass.GATEWAY','the!gateway',"Password for the p12 keystore holding the certificate of GATEWAY"),
             ('KeystorePass.WORKFLOW','the!workflow',"Password for the p12 keystore holding the certificate of WORKFLOW"),
             ('KeystorePass.SERVORCH','the!servorch',"Password for the p12 keystore holding the certificate of SERVORCH"),
+            ('KeystorePass.TSI','the!tsi',"Password for the p12 keystore holding the certificate of TSI"),
 
             ('cert.years', 50 , "Years these certificates should be valid, i.e. years until admin retirement"),
             ('cert.email','admin@unicore.com',"Email for the Cert authority and other certs"),

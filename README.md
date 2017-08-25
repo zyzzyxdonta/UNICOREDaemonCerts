@@ -16,7 +16,7 @@ A typical command to generate Daemon Certs for all UNICORE server daemons would 
                         "cert.Organization=Nanomatch GmbH" \
                         cert.Country=DE \
                         cert.Locality=Karlsruhe \
-                        "cert.State=Baden Württemberg" \
+                        "cert.State=BW" \
                         GCID=NANO-SITE 
 
                         
@@ -35,6 +35,14 @@ The program will generate the certs and the following files:
 * rfc4514_dns.txt contains the generated server DNs in the rfc4514 format.
 * xuudb_commands.sh contains the server DNs again including the commands, which have to be executed to add them to XUUDB.
 
+## Using a existing CA
+In this case you need to have the following filestructure in your directory.CA=CA_DIR directory.
+* CADIR/cacert.pem contains the CA certificates.
+* CADIR/private/cakey.pem contains the CA private key
+* CADIR/serial contains the next usable serial as hex
+
+WARNING: this is untested. Especially it does not keep standed /etc/ssl/index.* files updated. The only thing, which is kept updated is serial. Don't use it with a production CA, unless you made lots of backups.
+
 ## License
 BSD 3-Clause
 
@@ -43,4 +51,5 @@ Nanomatch GmbH 2017
 
 ## TODO
 * Find out, which standard is supported by XUUDB.
+* In case of existing CA, keep index.txts updated.
 * Testing.

@@ -27,7 +27,10 @@ class DaemonCerts(object):
                          "XUUDB",
                          "UNICOREX",
                          "REGISTRY",
-                         "UNITY"
+                         "UNITY",
+                         "WORKFLOW",
+                         "SERVORCH",
+                         "TSI"
                        ]
 
         FQDN = self.dcs.get_value("FQDN")
@@ -97,14 +100,14 @@ class DaemonCerts(object):
 
    A typical command to generate Daemon Certs for all UNICORE server daemons would be:
 
-   CreateDaemonCerts.py FQDN=int-bionano.it.kit.edu \\
+   CreateDaemonCerts.py FQDN=myhost.domain.com \\
                         cert.email=admin@your_mail.de \\
                         "cert.OrganizationalUnit=IT Services" \\
-                        "cert.Organization=Nanomatch GmbH" \\
+                        "cert.Organization=NM GmbH" \\
                         cert.Country=DE \\
                         cert.Locality=Karlsruhe \\
-                        "cert.State=Baden Württemberg" \\
-                        GCID=NANO-SITE 
+                        "cert.State=BW" \\
+                        GCID=MY-SITE
      
     Please note that Country can only be two letter code. Individiual daemon domains can specified using: Domains.SERVER=FQDN. This is completely optional. Don't do it unless you really need it.
     The program will generate the certs and the following files:
