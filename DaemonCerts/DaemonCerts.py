@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import sys
 import atexit
+from lxml import etree
 
 from OpenSSL import crypto
 
@@ -12,7 +13,8 @@ from DaemonCerts.DaemonCertsSettings import DaemonCertsSettings
 from DaemonCerts.utility.misc_file_functions import mkdir_p
 
 import os, shutil
-from os.path import join
+from os.path import join,sep
+
 
 class DaemonCerts(object):
     def __init__(self,sysargs):
@@ -55,6 +57,158 @@ class DaemonCerts(object):
 
         atexit.register(self.cleanup)
 
+        unipath = self.dcs.get_value("directory.unicore")
+        #builds: unicore_path/daemon_name/conf/filename:
+        get_path = lambda daemon, filename : "%s%s%s%s%s%s%s" %(unipath,sep,daemon,sep,"conf",sep,filename)
+        # Dict { filename : { "values" : [ ("XPATH","VALUE") , ("XPATH","VALUE"), ... ]
+        #                    "attrib" : [ ("XPATH","ATTRIB",VALUE) , ("XPATH","ATTRIB","VALUE"), ... ]
+        # TODO: We are still missing lifetime infinity!
+        self.static_xml_changes = {
+            get_path("unicorex","xnjs_legacy.xml") :
+            {
+                "values" : [],
+                "attrib" : [
+                    ("//eng:Property[@name='CLASSICTSI.ssl.disable']","value","false"),
+                    ("//eng:Property[@name='CLASSICTSI.machine']", "value", "%s" %self.dcs.get_value("Domains.TSI"))
+                ]
+            },
+            get_path("unicorex", "wsrflite.xml"):
+            {
+                "values": [],
+                "attrib": [
+                    ("//property[@name='container.baseurl']", "value", "https://%s:8080/%s/services"%
+                                    (self.dcs.get_value("Domains.GATEWAY"),
+                                     self.dcs.get_value("GCID")
+                                     )),
+                    ("//property[@name='container.host']", "value", self.dcs.get_value("Domains.UNICOREX") ),
+                    ("//property[@name='container.security.credential.password']", "value", self.dcs.get_value("KeystorePass.UNICOREX")),
+                    ("//property[@name='container.client.serverHostnameChecking']", "value", "WARN")
+                ]
+            },
+            get_path("workflow", "wsrflite.xml"):
+            {
+                "values": [],
+                "attrib": [
+                    ("//property[@name='container.baseurl']", "value", "https://%s:8080/%s/services" %
+                     (self.dcs.get_value("Domains.GATEWAY"),
+                      self.dcs.get_value("WF-GCID")
+                      )),
+                    ("//property[@name='container.host']", "value", self.dcs.get_value("Domains.WORKFLOW")),
+                    ("//property[@name='container.security.credential.password']", "value", self.dcs.get_value("KeystorePass.WORKFLOW")),
+                    ("//property[@name='container.client.serverHostnameChecking']", "value", "WARN")
+                ]
+            },
+            get_path("servorch", "wsrflite.xml"):
+            {
+                "values": [],
+                "attrib": [
+                    ("//property[@name='container.baseurl']", "value", "https://%s:8080/SERVORCH/services" % self.dcs.get_value("Domains.GATEWAY")),
+                    ("//property[@name='container.host']", "value", self.dcs.get_value("Domains.SERVORCH")),
+                    ("//property[@name='container.security.credential.password']", "value",
+                     self.dcs.get_value("KeystorePass.SERVORCH")),
+                    ("//property[@name='container.client.serverHostnameChecking']", "value", "WARN")
+                ]
+            },
+            get_path("registry", "wsrflite.xml"):
+            {
+                "values": [],
+                "attrib": [
+                    ("//property[@name='container.baseurl']", "value", "https://%s:8080/REGISTRY/services" %
+                     self.dcs.get_value("Domains.GATEWAY") ),
+                    ("//property[@name='container.host']", "value", self.dcs.get_value("Domains.REGISTRY")),
+                    ("//property[@name='container.security.credential.password']", "value",
+                     self.dcs.get_value("KeystorePass.REGISTRY")),
+                    ("//property[@name='container.client.serverHostnameChecking']", "value", "WARN")
+                ]
+            }
+        }
+        self.static_plainfile_changes = {
+            get_path("unicorex","uas.config") :
+            [
+                ("coreServices.targetsystemfactory.xnjs.configfile","conf/xnjs_legacy.xml"),
+                ("container.sitename",self.dcs.get_value("GCID")),
+                ("container.externalregistry.use","true"),
+                ("container.externalregistry.url","https://%s:8080/REGISTRY/services/Registry?res=default_registry"%(self.dcs.get_value("Domains.GATEWAY"))),
+                ("container.security.rest.authentication.UNITY.class","eu.unicore.services.rest.security.UnitySAMLAuthenticator"),
+                ("container.security.rest.authentication.UNITY.address","https://%s:2443/unicore-soapidp/saml2unicoreidp-soap/AuthenticationService"%self.dcs.get_value("Domains.UNITY")),
+                ("container.security.rest.authentication.UNITY.validate","true"),
+                ("container.security.attributes.XUUDB.xuudbHost","https://%s"%(self.dcs.get_value("Domains.XUUDB"))),
+                ("container.security.attributes.XUUDB.xuudbGCID",self.dcs.get_value("GCID"))
+            ],
+            get_path("gateway", "connections.properties"):
+            [
+                ("REGISTRY", "https://%s:7778"% self.dcs.get_value("Domains.REGISTRY")),
+                (self.dcs.get_value("GCID"), "https://%s:7777"% self.dcs.get_value("Domains.UNICOREX"))
+            ],
+            get_path("gateway", "gateway.properties"):
+            [
+                ("gateway.hostname", "https://%s:8080" % self.dcs.get_value("Domains.GATEWAY")),
+                ("gateway.httpServer.requireClientAuthn", "false")
+            ],
+            get_path("gateway", "security.properties"):
+            [
+                ("gateway.credential.password", self.dcs.get_value("KeystorePass.UNICOREX"))
+            ],
+            get_path("tsi_selected", "tsi.properties"):
+            [
+                ("tsi.my_addr", self.dcs.get_value("Domains.TSI")),
+                ("tsi.njs_machine", self.dcs.get_value("Domains.UNICOREX")),
+                ("tsi.keystore","<UnComment>"),
+                ("tsi.keypass",self.dcs.get_value("KeystorePass.TSI")),
+                ("tsi.certificate","<UnComment>"),
+                ("tsi.truststore","<UnComment>")
+            ],
+            get_path("xuudb", "xuudb_client.conf"):
+            [
+                ("xuudb.address","https://%s:34463"%self.dcs.get_value("Domains.XUUDB")),
+                ("xuudb.credential.password",self.dcs.get_value("KeystorePass.XUUDB")),
+                ("xuudb.client.serverHostnameChecking","WARN")
+            ],
+            get_path("xuudb", "xuudb_server.conf"):
+            [
+                ("xuudb.address", "https://%s:34463" % self.dcs.get_value("Domains.XUUDB")),
+                ("xuudb.credential.password", self.dcs.get_value("KeystorePass.XUUDB")),
+                ("xuudb.client.serverHostnameChecking", "WARN")
+            ],
+            get_path("unity", "pki.properties"):
+            [
+                ("unity.pki.credentials.MAIN.path", "conf/pki/unity.p12"),
+                ("unity.pki.credentials.MAIN.keyAlias", "<Comment>"),
+                ("unity.pki.credentials.MAIN.password", self.dcs.get_value("KeystorePass.UNITY")),
+                ("unity.pki.truststores.MAIN.type", "directory"),
+                ("unity.pki.truststores.MAIN.directoryLocations", "conf/pki/trusted/*.pem"),
+                ("unity.pki.truststores.MAIN.crlLocations", "conf/pki/trusted/*.crl")
+            ],
+            get_path("unity","unityServer.conf"):
+            [
+                ("unityServer.core.httpServer.host", self.dcs.get_value("Domains.UNITY")),
+                ("unityServer.core.httpServer.advertisedHost",  self.dcs.get_value("Domains.UNITY")),
+                ("unityServer.core.initializers.0","<Comment>")
+            ],
+            get_path("workflow", "uas.config"):
+            [
+                ("container.sitename", self.dcs.get_value("WF-GCID")),
+                ("container.externalregistry.url","https://%s:8080/REGISTRY/services/Registry?res=default_registry"%self.dcs.get_value("Domains.GATEWAY")),
+                ("container.security.attributes.XUUDB.xuudbHost","https://%s"%self.dcs.get_value("Domains.XUUDB")),
+                ("container.security.attributes.XUUDB.xuudbGCID", self.dcs.get_value("GCID")),
+                ("container.security.rest.authentication.UNITY.class","eu.unicore.services.rest.security.UnitySAMLAuthenticator"),
+                ("container.security.rest.authentication.UNITY.address","https://%s:2443/unicore-soapidp/saml2unicoreidp-soap/AuthenticationService"%self.dcs.get_value("Domains.UNITY")),
+                ("container.security.rest.authentication.UNITY.validate","true"),
+                ("container.security.rest.authentication.UNITY.order", "UNITY")
+            ],
+            get_path("servorch", "uas.config"):
+            [
+                ("container.externalregistry.url",
+                 "https://%s:8080/REGISTRY/services/Registry?res=default_registry" % self.dcs.get_value(
+                     "Domains.GATEWAY")),
+                ("container.security.attributes.XUUDB.xuudbHost",
+                 "https://%s" % self.dcs.get_value("Domains.XUUDB")),
+                ("container.security.attributes.XUUDB.xuudbGCID", self.dcs.get_value("GCID"))
+            ]
+        }
+
+
+
     def get_san_extension_ca(self,san_string):
         return [ crypto.X509Extension(b"basicConstraints", False, b"CA:TRUE"), crypto.X509Extension(b"subjectAltName", False, san_string.encode("UTF-8")) ]
 
@@ -73,6 +227,9 @@ class DaemonCerts(object):
         cert_path = self.dcs.get_value('directory.certs')
         truststore_path = join(cert_path, "trusted")
         mkdir_p(truststore_path)
+
+
+
         return truststore_path
 
     def make_cert_dirs(self):
@@ -142,8 +299,56 @@ class DaemonCerts(object):
                     rfc.write("%s\n"%dn)
                     self.dn_hooks(server,dn)
 
-    def create_add_change_xml(self,filename,key,value):
-        pass
+        self.post_update()
+
+    def update_xml(self,filename,attrib_and_value_dict):
+        tree = None
+        if os.path.isfile(filename):
+            with open(filename,'r') as xmlin:
+                tree = etree.parse(xmlin)
+
+            for xpath,value in attrib_and_value_dict["values"]:
+                self.change_xml_value(tree,xpath,value)
+
+            for xpath,attrib,value in attrib_and_value_dict["attrib"]:
+                self.change_xml_attrib(tree,xpath,attrib,value)
+
+            with open(filename, 'w') as xmlout:
+                xmlout.write(etree.tostring(tree,encoding="UTF-8").decode("UTF-8"))
+        #Else we just write out the instructions
+        else:
+            mkdir_p(os.path.dirname(filename))
+            with open(filename + ".instructions.txt",'w') as xmlout:
+                for xpath, value in attrib_and_value_dict["values"]:
+                    xmlout.write("Change value of path <%s> to: <%s>\n"%(xpath,value))
+                for xpath, attrib, value in attrib_and_value_dict["attrib"]:
+                    xmlout.write("Change attribute <%s> of path <%s> to: <%s>\n" % (attrib, xpath, value))
+
+    def change_xml_value(self,tree,xpath_expression,value):
+        #xpath_expression: "//eng:Property[@name='CLASSICTSI.ssl.disable']"
+        #value is string
+        root = tree.getroot()
+        test = tree.find(xpath_expression, namespaces=root.nsmap)
+        test.text = value
+
+    def change_xml_attrib(self,tree,xpath_expression,attrib,value):
+        #xpath_expression: "//eng:Property[@name='CLASSICTSI.ssl.disable']"
+        #attrib is string
+        #value is string
+        root = tree.getroot()
+        test = tree.find(xpath_expression, namespaces=root.nsmap)
+        print(test)
+        print(xpath_expression)
+
+        test.attrib[attrib] = value
+        print(test.attrib[attrib])
+
+    def post_update(self):
+        for filename,attrib_and_value_dict in self.static_xml_changes.items():
+            self.update_xml(filename,attrib_and_value_dict)
+        for filename, changelist in self.static_plainfile_changes.items():
+            for key,value in changelist:
+                self.create_add_change_plain(filename,key,value)
 
     def create_add_change_plain(self,filename,key,value):
         if os.path.isfile(filename):
@@ -154,15 +359,32 @@ class DaemonCerts(object):
                     for line in myin:
                         if "=" in line:
                             splitline = line.split("=")
-                            if splitline[0] == key or splitline[0] == "#%s"%key:
+                            keypruned = splitline[0].replace(" ","")
+                            if keypruned == key or keypruned == "#%s"%key:
                                 found = True
-                                myout.write("%s=%s\n"%(key,value))
+                                if value == "<UnComment>":
+                                    if line.startswith("#"):
+                                        myout.write(line[1:])
+                                    else:
+                                        myout.write(line)
+                                elif value == "<Comment>":
+                                    if line.startswith("#"):
+                                        myout.write(line)
+                                    else:
+                                        myout.write("#%s"%line)
+                                else:
+                                    myout.write("%s=%s\n" % (key, value))
+
+                            else:
+                                myout.write(line)
                         else:
                             myout.write(line)
                     if not found:
-                        myout.write("%s=%s\n" % (key, value))
+                        if not "Comment" in value:
+                            myout.write("%s=%s\n" % (key, value))
             shutil.move(outname,filename)
         else:
+            mkdir_p(os.path.dirname(filename))
             with open(filename,'a') as out:
                 out.write("%s=%s\n"%(key,value))
 
@@ -324,12 +546,30 @@ class DaemonCerts(object):
             with open(unity_cert_path,'w') as out:
                 out.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode("UTF-8"))
 
+            # Unity defaults to a jks truststore:
+            unicore_dir = self.dcs.get_value("directory.unicore")
+            unity_pki_dir = join(unicore_dir, "unity", "conf","pki")
+            unity_truststore_path = join(unity_pki_dir,"trusted")
+            mkdir_p(unity_truststore_path)
+            unity_privatekey = join(unity_pki_dir,"unity.p12")
+            with open(unity_privatekey, 'wb') as pfxfile:
+                pfxfile.write(pfxdata)
+
+            mkdir_p(unity_truststore_path)
+            unity_truststore_path = join(unity_truststore_path,"truststore.pem")
+            with open(unity_truststore_path,'w') as out:
+                out.write(crypto.dump_certificate(crypto.FILETYPE_PEM, ca_cert).decode("UTF-8"))
+
         if server == "TSI":
             # TSI needs its cert and key both in PEM format
             unicore_dir = self.dcs.get_value("directory.unicore")
             server_confdir = join(unicore_dir, "tsi_selected", "conf")
             mkdir_p(server_confdir)
             tsi_cert_path = join(server_confdir, "tsi-cert.pem")
+
+            tsi_truststore_path = join(server_confdir, "tsi-truststore.pem")
+            with open(tsi_truststore_path,'w') as out:
+                out.write(crypto.dump_certificate(crypto.FILETYPE_PEM, ca_cert).decode("UTF-8"))
 
             with open(tsi_cert_path, 'w') as out:
                 out.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode("UTF-8"))

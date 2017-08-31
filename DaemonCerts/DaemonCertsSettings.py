@@ -41,7 +41,8 @@ class DaemonCertsSettings(AbstractSettings):
             ('cert.Organization', 'MyOrganization', "O-Field in the DN. Your company"),
             ('cert.OrganizationalUnit', 'IT Services',"OU-Field in the DN. Where the Admin works in. For example IT Services."),
 
-            ('GCID','CLUSTER-SITE','GCID of the UNICORE site. Only required if using XUUDB'),
+            ('GCID','CLUSTER-SITE','GCID of the UNICORE/X.'),
+            ('WF-GCID', 'WORKFLOW-SITE', 'GCID of the WORKFLOW server.'),
 
             ('directory.certs','./certs','Directory where all the certificates will be put'),
             ('directory.ca', './CA', 'Directory where the self signed CA will be put'),
