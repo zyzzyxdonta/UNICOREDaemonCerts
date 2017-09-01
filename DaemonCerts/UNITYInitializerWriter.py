@@ -73,7 +73,7 @@ void addServer(String dn, String cn)
 
 def write_unity_module():
     template = """# initialization script: creates groups structure and UNICORE attribute types
-unityServer.core.script.9001.file=${CONF}/scripts/unicoreContentInitializer.groovy
-unityServer.core.script.9001.trigger=pre-init
+unityServer.core.script.9002.file=${CONF}/scripts/unicoreServerContentInitializer.groovy
+unityServer.core.script.9002.trigger=pre-init
 """
     return template

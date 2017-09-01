@@ -198,6 +198,7 @@ class DaemonCerts(object):
                 ("unityServer.core.httpServer.advertisedHost",  self.dcs.get_value("Domains.UNITY")),
                 ("$include.oauthAS","<Comment>"),
                 ("$include.demoContents","<Comment>"),
+                ("$include.unicoreServerSetup", "${CONF}/modules/unicoreQuickstart.module"),
                 ("$include.unicoreWithPam","<UnComment>")
             ],
             get_path("workflow", "uas.config"):
@@ -253,9 +254,9 @@ class DaemonCerts(object):
 
     def random_string(self, length):
         import random
-        randstring = ''.join(random.sample(map(chr, range(48, 57) + range(65, 90) + range(97, 122)), length))
+        import string
+        randstring = ''.join(random.sample(string.ascii_letters, length))
         return randstring
-
 
     def get_san_extension_ca(self,san_string):
         return [ crypto.X509Extension(b"basicConstraints", False, b"CA:TRUE"), crypto.X509Extension(b"subjectAltName", False, san_string.encode("UTF-8")) ]
@@ -344,7 +345,7 @@ class DaemonCerts(object):
                     xuudb_com.write("%s\n"%xcom)
                     rfc.write("%s\n"%dn)
                     self.dn_hooks(server,dn)
-                    dn_list.append(server,dn)
+                    dn_list.append((server,dn))
 
         self.post_update(dn_list)
 
@@ -410,7 +411,7 @@ class DaemonCerts(object):
         unity_conf_dir = join(self.dcs.get_value("directory.unicore"),"unity","conf")
         content_init_file = join(unity_conf_dir,"scripts")
         mkdir_p(content_init_file)
-        content_init_file = join(content_init_file,"unicoreContentInitializer.groovy")
+        content_init_file = join(content_init_file,"unicoreServerContentInitializer.groovy")
         with open(content_init_file,'w') as out:
             out.write(write_groovy_script(dn_list))
 
