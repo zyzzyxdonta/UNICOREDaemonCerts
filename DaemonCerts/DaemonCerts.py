@@ -183,12 +183,12 @@ class DaemonCerts(object):
             ],
             get_path("unity", "pki.properties"):
             [
-                ("unity.pki.credentials.MAIN.path", "{CONF}/pki/unity.p12"),
+                ("unity.pki.credentials.MAIN.path", "conf/pki/unity.p12"),
                 ("unity.pki.credentials.MAIN.keyAlias", "<Comment>"),
                 ("unity.pki.credentials.MAIN.password", self.dcs.get_value("KeystorePass.UNITY")),
                 ("unity.pki.truststores.MAIN.type", "directory"),
-                ("unity.pki.truststores.MAIN.directoryLocations.1", "{CONF}/pki/trusted-ca/*.pem"),
-                ("unity.pki.truststores.MAIN.crlLocations.1", "{CONF}/pki/trusted-ca/*.crl")
+                ("unity.pki.truststores.MAIN.directoryLocations.1", "conf/pki/trusted-ca/*.pem"),
+                ("unity.pki.truststores.MAIN.crlLocations.1", "conf/pki/trusted-ca/*.crl")
             ],
             get_path("unity","unityServer.conf"):
             [
@@ -599,7 +599,7 @@ class DaemonCerts(object):
             # Unity defaults to a jks truststore:
             unicore_dir = self.dcs.get_value("directory.unicore")
             unity_pki_dir = join(unicore_dir, "unity", "conf","pki")
-            unity_truststore_path = join(unity_pki_dir,"trusted")
+            unity_truststore_path = join(unity_pki_dir,"trusted-ca")
             mkdir_p(unity_truststore_path)
             unity_privatekey = join(unity_pki_dir,"unity.p12")
             with open(unity_privatekey, 'wb') as pfxfile:
