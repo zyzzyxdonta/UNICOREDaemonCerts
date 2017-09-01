@@ -161,14 +161,12 @@ class DaemonCerts(object):
             get_path("xuudb", "xuudb_client.conf"):
             [
                 ("xuudb.address","https://%s:34463"%self.dcs.get_value("Domains.XUUDB")),
-                ("xuudb.credential.password",self.dcs.get_value("KeystorePass.XUUDB")),
-                ("xuudb.client.serverHostnameChecking","WARN")
+                ("xuudb.credential.password",self.dcs.get_value("KeystorePass.XUUDB"))
             ],
             get_path("xuudb", "xuudb_server.conf"):
             [
                 ("xuudb.address", "https://%s:34463" % self.dcs.get_value("Domains.XUUDB")),
-                ("xuudb.credential.password", self.dcs.get_value("KeystorePass.XUUDB")),
-                ("xuudb.client.serverHostnameChecking", "WARN")
+                ("xuudb.credential.password", self.dcs.get_value("KeystorePass.XUUDB"))
             ],
             get_path("unity", "pki.properties"):
             [
