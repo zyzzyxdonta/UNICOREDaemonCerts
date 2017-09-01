@@ -379,7 +379,7 @@ class DaemonCerts(object):
         gateway_fqdn = self.dcs.get_value("Domains.GATEWAY")
         for component,vofile in self.vo_paths:
             with open(vofile,'wt') as out:
-                write_vo_config(out,pem_abs_loc,component,unity_fqdn,gateway_fqdn)
+                out.write(write_vo_config(pem_abs_loc,component,unity_fqdn,gateway_fqdn))
 
 
 

@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 
-def write_vo_config(outstream,UNITY_PEM_LOCATION,COMPONENT,UNITY_FQDN,GATEWAY_FQDN):
+def write_vo_config(UNITY_PEM_LOCATION,COMPONENT,UNITY_FQDN,GATEWAY_FQDN):
     template = """# ##########################
 # General configuration
 # ##########################
@@ -83,3 +83,4 @@ vo.pull.cacheTtl=-1
 # whether the mode is enabled by using (or not) a respective attribute source in uas.config.
 vo.push.enable=false
 """%(COMPONENT,UNITY_PEM_LOCATION,GATEWAY_FQDN,COMPONENT,UNITY_FQDN,UNITY_FQDN)
+    return template
