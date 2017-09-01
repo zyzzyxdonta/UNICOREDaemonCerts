@@ -194,6 +194,19 @@ class DaemonCerts(object):
                 ("container.security.rest.authentication.UNITY.validate","true"),
                 ("container.security.rest.authentication.UNITY.order", "UNITY")
             ],
+            get_path("registry", "uas.config"):
+            [
+                ("container.security.attributes.XUUDB.xuudbHost",
+                 "https://%s" % self.dcs.get_value("Domains.XUUDB")),
+                ("container.security.attributes.XUUDB.xuudbGCID", self.dcs.get_value("GCID")),
+                ("container.security.rest.authentication.UNITY.class",
+                 "eu.unicore.services.rest.security.UnitySAMLAuthenticator"),
+                ("container.security.rest.authentication.UNITY.address",
+                 "https://%s:2443/unicore-soapidp/saml2unicoreidp-soap/AuthenticationService" % self.dcs.get_value(
+                     "Domains.UNITY")),
+                ("container.security.rest.authentication.UNITY.validate", "true"),
+                ("container.security.rest.authentication.UNITY.order", "UNITY")
+            ],
             get_path("servorch", "uas.config"):
             [
                 ("container.externalregistry.url",
