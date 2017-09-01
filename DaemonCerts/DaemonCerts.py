@@ -137,11 +137,15 @@ class DaemonCerts(object):
                 ("container.sitename",self.dcs.get_value("GCID")),
                 ("container.externalregistry.use","true"),
                 ("container.externalregistry.url","https://%s:8080/REGISTRY/services/Registry?res=default_registry"%(self.dcs.get_value("Domains.GATEWAY"))),
+                ("container.security.rest.authentication.order","UNITY"),
                 ("container.security.rest.authentication.UNITY.class","eu.unicore.services.rest.security.UnitySAMLAuthenticator"),
                 ("container.security.rest.authentication.UNITY.address","https://%s:2443/unicore-soapidp/saml2unicoreidp-soap/AuthenticationService"%self.dcs.get_value("Domains.UNITY")),
                 ("container.security.rest.authentication.UNITY.validate","true"),
                 ("container.security.attributes.XUUDB.xuudbHost","https://%s"%(self.dcs.get_value("Domains.XUUDB"))),
-                ("container.security.attributes.XUUDB.xuudbGCID",self.dcs.get_value("GCID"))
+                ("container.security.attributes.XUUDB.xuudbGCID",self.dcs.get_value("GCID")),
+                ("container.security.attributes.VO-PULL.class","eu.unicore.uas.security.vo.SAMLPullAuthoriser"),
+                ("container.security.attributes.VO-PULL.configurationFile","conf/vo.config"),
+                ("container.security.attributes.order", "XUUDB" if self.dcs.get_value("AUTHSERVER") == "XUUDB" else "VO-PULL")
             ],
             get_path("gateway", "connections.properties"):
             [
@@ -203,7 +207,10 @@ class DaemonCerts(object):
                 ("container.security.rest.authentication.UNITY.class","eu.unicore.services.rest.security.UnitySAMLAuthenticator"),
                 ("container.security.rest.authentication.UNITY.address","https://%s:2443/unicore-soapidp/saml2unicoreidp-soap/AuthenticationService"%self.dcs.get_value("Domains.UNITY")),
                 ("container.security.rest.authentication.UNITY.validate","true"),
-                ("container.security.rest.authentication.UNITY.order", "UNITY")
+                ("container.security.rest.authentication.UNITY.order", "UNITY"),
+                ("container.security.attributes.VO-PULL.class","eu.unicore.uas.security.vo.SAMLPullAuthoriser"),
+                ("container.security.attributes.VO-PULL.configurationFile","conf/vo.config"),
+                ("container.security.attributes.order", "XUUDB" if self.dcs.get_value("AUTHSERVER") == "XUUDB" else "VO-PULL")
             ],
             get_path("registry", "uas.config"):
             [
@@ -216,7 +223,10 @@ class DaemonCerts(object):
                  "https://%s:2443/unicore-soapidp/saml2unicoreidp-soap/AuthenticationService" % self.dcs.get_value(
                      "Domains.UNITY")),
                 ("container.security.rest.authentication.UNITY.validate", "true"),
-                ("container.security.rest.authentication.UNITY.order", "UNITY")
+                ("container.security.rest.authentication.UNITY.order", "UNITY"),
+                ("container.security.attributes.VO-PULL.class","eu.unicore.uas.security.vo.SAMLPullAuthoriser"),
+                ("container.security.attributes.VO-PULL.configurationFile","conf/vo.config"),
+                ("container.security.attributes.order", "XUUDB" if self.dcs.get_value("AUTHSERVER") == "XUUDB" else "VO-PULL")
             ],
             get_path("servorch", "uas.config"):
             [
@@ -225,7 +235,17 @@ class DaemonCerts(object):
                      "Domains.GATEWAY")),
                 ("container.security.attributes.XUUDB.xuudbHost",
                  "https://%s" % self.dcs.get_value("Domains.XUUDB")),
-                ("container.security.attributes.XUUDB.xuudbGCID", self.dcs.get_value("GCID"))
+                ("container.security.attributes.XUUDB.xuudbGCID", self.dcs.get_value("GCID")),
+                ("container.security.rest.authentication.UNITY.class",
+                 "eu.unicore.services.rest.security.UnitySAMLAuthenticator"),
+                ("container.security.rest.authentication.UNITY.address",
+                 "https://%s:2443/unicore-soapidp/saml2unicoreidp-soap/AuthenticationService" % self.dcs.get_value(
+                     "Domains.UNITY")),
+                ("container.security.rest.authentication.UNITY.validate", "true"),
+                ("container.security.rest.authentication.order", "UNITY"),
+                ("container.security.attributes.VO-PULL.class","eu.unicore.uas.security.vo.SAMLPullAuthoriser"),
+                ("container.security.attributes.VO-PULL.configurationFile","conf/vo.config"),
+                ("container.security.attributes.order", "XUUDB" if self.dcs.get_value("AUTHSERVER") == "XUUDB" else "VO-PULL")
             ]
         }
 
@@ -249,9 +269,6 @@ class DaemonCerts(object):
         cert_path = self.dcs.get_value('directory.certs')
         truststore_path = join(cert_path, "trusted")
         mkdir_p(truststore_path)
-
-
-
         return truststore_path
 
     def make_cert_dirs(self):
