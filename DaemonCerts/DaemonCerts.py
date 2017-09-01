@@ -10,6 +10,7 @@ from lxml import etree
 from OpenSSL import crypto
 
 from DaemonCerts.DaemonCertsSettings import DaemonCertsSettings
+from DaemonCerts.VOConfigWriter import write_vo_config
 from DaemonCerts.utility.misc_file_functions import mkdir_p
 
 import os, shutil
@@ -63,6 +64,13 @@ class DaemonCerts(object):
         # Dict { filename : { "values" : [ ("XPATH","VALUE") , ("XPATH","VALUE"), ... ]
         #                    "attrib" : [ ("XPATH","ATTRIB",VALUE) , ("XPATH","ATTRIB","VALUE"), ... ]
         # TODO: We are still missing lifetime infinity!
+        self.vo_paths = [
+            (self.dcs.get_value("GCID"),get_path("unicorex", "vo.config")),
+            ("SERVORCH",get_path("servorch", "vo.config")),
+            (self.dcs.get_value("WF-GCID"),get_path("workflow", "vo.config")),
+            ("REGISTRY",get_path("registry", "vo.config"))
+        ]
+
         self.static_xml_changes = {
             get_path("unicorex","xnjs_legacy.xml") :
             {
@@ -138,6 +146,7 @@ class DaemonCerts(object):
             get_path("gateway", "connections.properties"):
             [
                 ("REGISTRY", "https://%s:7778"% self.dcs.get_value("Domains.REGISTRY")),
+                ("SERVORCH", "https://%s:7701" % self.dcs.get_value("Domains.SERVORCH")),
                 (self.dcs.get_value("GCID"), "https://%s:7777"% self.dcs.get_value("Domains.UNICOREX"))
             ],
             get_path("gateway", "gateway.properties"):
@@ -170,18 +179,20 @@ class DaemonCerts(object):
             ],
             get_path("unity", "pki.properties"):
             [
-                ("unity.pki.credentials.MAIN.path", "conf/pki/unity.p12"),
+                ("unity.pki.credentials.MAIN.path", "{CONF}/pki/unity.p12"),
                 ("unity.pki.credentials.MAIN.keyAlias", "<Comment>"),
                 ("unity.pki.credentials.MAIN.password", self.dcs.get_value("KeystorePass.UNITY")),
                 ("unity.pki.truststores.MAIN.type", "directory"),
-                ("unity.pki.truststores.MAIN.directoryLocations", "conf/pki/trusted/*.pem"),
-                ("unity.pki.truststores.MAIN.crlLocations", "conf/pki/trusted/*.crl")
+                ("unity.pki.truststores.MAIN.directoryLocations.1", "{CONF}/pki/trusted-ca/*.pem"),
+                ("unity.pki.truststores.MAIN.crlLocations.1", "{CONF}/pki/trusted-ca/*.crl")
             ],
             get_path("unity","unityServer.conf"):
             [
                 ("unityServer.core.httpServer.host", self.dcs.get_value("Domains.UNITY")),
                 ("unityServer.core.httpServer.advertisedHost",  self.dcs.get_value("Domains.UNITY")),
-                ("unityServer.core.initializers.0","<Comment>")
+                ("$include.oauthAS","<Comment>"),
+                ("$include.demoContents","<Comment>"),
+                ("$include.unicoreWithPam","<UnComment>")
             ],
             get_path("workflow", "uas.config"):
             [
@@ -360,6 +371,17 @@ class DaemonCerts(object):
         for filename, changelist in self.static_plainfile_changes.items():
             for key,value in changelist:
                 self.create_add_change_plain(filename,key,value)
+
+        cert_dir = self.dcs.get_value("Directory.certs")
+        pem_rel_loc = join(cert_dir, "unity", "unity.pem")
+        pem_abs_loc = os.path.abspath(pem_rel_loc)
+        unity_fqdn = self.dcs.get_value("Domains.UNITY")
+        gateway_fqdn = self.dcs.get_value("Domains.GATEWAY")
+        for component,vofile in self.vo_paths:
+            with open(vofile,'wt') as out:
+                write_vo_config(out,pem_abs_loc,component,unity_fqdn,gateway_fqdn)
+
+
 
     def create_add_change_plain(self,filename,key,value):
         if os.path.isfile(filename):

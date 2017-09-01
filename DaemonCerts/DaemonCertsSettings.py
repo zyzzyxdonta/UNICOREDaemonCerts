@@ -44,7 +44,7 @@ class DaemonCertsSettings(AbstractSettings):
             ('GCID','CLUSTER-SITE','GCID of the UNICORE/X.'),
             ('WF-GCID', 'WORKFLOW-SITE', 'GCID of the WORKFLOW server.'),
 
-            ('directory.certs','./certs','Directory where all the certificates will be put'),
+            ('directory.certs','./unicore/certs','Directory where all the certificates will be put'),
             ('directory.ca', './CA', 'Directory where the self signed CA will be put'),
             ('directory.support', './supportfiles', 'Directory where supporting information will be put'),
             ('directory.unicore', './unicore', 'Directory where changes to the template configurations should be put')

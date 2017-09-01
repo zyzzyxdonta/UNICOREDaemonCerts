@@ -13,3 +13,6 @@ def mkdir_p(path):
             pass
         else:
             raise
+
+def get_abs_path(path):
+    return os.path.abspath(path)
