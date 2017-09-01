@@ -372,7 +372,7 @@ class DaemonCerts(object):
             for key,value in changelist:
                 self.create_add_change_plain(filename,key,value)
 
-        cert_dir = self.dcs.get_value("Directory.certs")
+        cert_dir = self.dcs.get_value("directory.certs")
         pem_rel_loc = join(cert_dir, "unity", "unity.pem")
         pem_abs_loc = os.path.abspath(pem_rel_loc)
         unity_fqdn = self.dcs.get_value("Domains.UNITY")
