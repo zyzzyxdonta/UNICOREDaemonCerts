@@ -45,6 +45,7 @@ class DaemonCertsSettings(AbstractSettings):
             ('WF-GCID', 'WORKFLOW-SITE', 'GCID of the WORKFLOW server.'),
 
             ('AUTHSERVER','UNITY','Auth using UNITY or XUUDB (case sensitive, can only be one of the two words)'),
+            ('AdminPass','<SCRAMBLE>','Initial password of the unity admin user. Default: Random password. Will be found in cleartext in unityServer.conf'),
 
             ('directory.certs','./unicore/certs','Directory where all the certificates will be put'),
             ('directory.ca', './CA', 'Directory where the self signed CA will be put'),

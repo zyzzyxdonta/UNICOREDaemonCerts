@@ -10,6 +10,7 @@ from lxml import etree
 from OpenSSL import crypto
 
 from DaemonCerts.DaemonCertsSettings import DaemonCertsSettings
+from DaemonCerts.UNITYInitializerWriter import write_groovy_script, write_unity_module
 from DaemonCerts.VOConfigWriter import write_vo_config
 from DaemonCerts.utility.misc_file_functions import mkdir_p
 
@@ -192,6 +193,7 @@ class DaemonCerts(object):
             ],
             get_path("unity","unityServer.conf"):
             [
+                ("unityServer.core.initialAdminPassword",self.random_string(16) if self.dcs.get_value("AdminPass") == '<SCRAMBLE>' else self.dcs.get_value("AdminPass")),
                 ("unityServer.core.httpServer.host", self.dcs.get_value("Domains.UNITY")),
                 ("unityServer.core.httpServer.advertisedHost",  self.dcs.get_value("Domains.UNITY")),
                 ("$include.oauthAS","<Comment>"),
@@ -249,6 +251,10 @@ class DaemonCerts(object):
             ]
         }
 
+    def random_string(self, length):
+        import random
+        randstring = ''.join(random.sample(map(chr, range(48, 57) + range(65, 90) + range(97, 122)), length))
+        return randstring
 
 
     def get_san_extension_ca(self,san_string):
@@ -327,6 +333,7 @@ class DaemonCerts(object):
         xuudb_file = join(support_path_dir,"xuudb_commands.sh")
         rfc_file = join(support_path_dir,"rfc4514_dns.txt")
         mkdir_p(support_path_dir)
+        dn_list = []
         with open(xuudb_file,'w') as xuudb_com:
             with open(rfc_file, 'w') as rfc:
                 gcid = self.dcs.get_value("GCID")
@@ -337,8 +344,9 @@ class DaemonCerts(object):
                     xuudb_com.write("%s\n"%xcom)
                     rfc.write("%s\n"%dn)
                     self.dn_hooks(server,dn)
+                    dn_list.append(server,dn)
 
-        self.post_update()
+        self.post_update(dn_list)
 
     def update_xml(self,filename,attrib_and_value_dict):
         tree = None
@@ -382,7 +390,7 @@ class DaemonCerts(object):
         test.attrib[attrib] = value
         print(test.attrib[attrib])
 
-    def post_update(self):
+    def post_update(self,dn_list):
         for filename,attrib_and_value_dict in self.static_xml_changes.items():
             self.update_xml(filename,attrib_and_value_dict)
         for filename, changelist in self.static_plainfile_changes.items():
@@ -398,7 +406,19 @@ class DaemonCerts(object):
             with open(vofile,'wt') as out:
                 out.write(write_vo_config(pem_abs_loc,component,unity_fqdn,gateway_fqdn))
 
+        #Finally we write the unity config:
+        unity_conf_dir = join(self.dcs.get_value("directory.unicore"),"unity","conf")
+        content_init_file = join(unity_conf_dir,"scripts")
+        mkdir_p(content_init_file)
+        content_init_file = join(content_init_file,"unicoreContentInitializer.groovy")
+        with open(content_init_file,'w') as out:
+            out.write(write_groovy_script(dn_list))
 
+        module_init_file = join(unity_conf_dir,"modules")
+        mkdir_p(module_init_file)
+        module_init_file = join(module_init_file,"unicoreQuickstart.module")
+        with open(module_init_file,'w') as out:
+            out.write(write_unity_module())
 
     def create_add_change_plain(self,filename,key,value):
         if os.path.isfile(filename):
