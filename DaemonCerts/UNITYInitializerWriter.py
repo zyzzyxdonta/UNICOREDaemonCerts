@@ -47,7 +47,7 @@ try
         }
 """
     for servername,dn in dn_list:
-        template += 'addServer("%s", "%s");\n'%(dn,servername)
+        template += '        addServer("%s", "%s");\n'%(dn,servername)
     template +="""
 } catch (Exception e)
 {
@@ -64,7 +64,7 @@ void addServer(String dn, String cn)
         EntityParam Server = new EntityParam(unicoreClientA.getEntityId());
         groupsManagement.addMemberFromParent("/unicore", Server);
         groupsManagement.addMemberFromParent("/unicore/servers", Server);
-        log.info("Adding DN: ",dn," with CN: ",cn," to UNITY.");
+        log.info("Adding DN: " + dn + " with CN: " + cn + " to UNITY.");
         Attribute cnA = StringAttribute.of(CN_ATTR, "/", cn);
         attributesManagement.setAttribute(Server, cnA, false);
 }
