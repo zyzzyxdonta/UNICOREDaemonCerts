@@ -147,7 +147,7 @@ class DaemonCerts(object):
             ],
             get_path("gateway", "security.properties"):
             [
-                ("gateway.credential.password", self.dcs.get_value("KeystorePass.UNICOREX"))
+                ("gateway.credential.password", self.dcs.get_value("KeystorePass.GATEWAY"))
             ],
             get_path("tsi_selected", "tsi.properties"):
             [
