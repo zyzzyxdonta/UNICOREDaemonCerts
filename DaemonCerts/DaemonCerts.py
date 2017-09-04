@@ -85,8 +85,9 @@ class DaemonCerts(object):
             {
                 "values": [],
                 "attrib": [
-                    ("//property[@name='container.baseurl']", "value", "https://%s:8080/%s/services"%
+                    ("//property[@name='container.baseurl']", "value", "https://%s:%d/%s/services"%
                                     (self.dcs.get_value("Domains.GATEWAY"),
+                                     self.dcs.get_value("Port.GATEWAY"),
                                      self.dcs.get_value("GCID")
                                      )),
                     ("//property[@name='container.host']", "value", self.dcs.get_value("Domains.UNICOREX") ),
@@ -98,8 +99,9 @@ class DaemonCerts(object):
             {
                 "values": [],
                 "attrib": [
-                    ("//property[@name='container.baseurl']", "value", "https://%s:8080/%s/services" %
+                    ("//property[@name='container.baseurl']", "value", "https://%s:%d/%s/services" %
                      (self.dcs.get_value("Domains.GATEWAY"),
+                      self.dcs.get_value("Port.GATEWAY"),
                       self.dcs.get_value("WF-GCID")
                       )),
                     ("//property[@name='container.host']", "value", self.dcs.get_value("Domains.WORKFLOW")),
@@ -111,7 +113,7 @@ class DaemonCerts(object):
             {
                 "values": [],
                 "attrib": [
-                    ("//property[@name='container.baseurl']", "value", "https://%s:8080/SERVORCH/services" % self.dcs.get_value("Domains.GATEWAY")),
+                    ("//property[@name='container.baseurl']", "value", "https://%s:%d/SERVORCH/services" % (self.dcs.get_value("Domains.GATEWAY"),self.dcs.get_value("Port.GATEWAY"))),
                     ("//property[@name='container.host']", "value", self.dcs.get_value("Domains.SERVORCH")),
                     ("//property[@name='container.security.credential.password']", "value",
                      self.dcs.get_value("KeystorePass.SERVORCH")),
@@ -122,8 +124,8 @@ class DaemonCerts(object):
             {
                 "values": [],
                 "attrib": [
-                    ("//property[@name='container.baseurl']", "value", "https://%s:8080/REGISTRY/services" %
-                     self.dcs.get_value("Domains.GATEWAY") ),
+                    ("//property[@name='container.baseurl']", "value", "https://%s:%d/REGISTRY/services" %
+                     (self.dcs.get_value("Domains.GATEWAY"),self.dcs.get_value("Port.GATEWAY"))  ),
                     ("//property[@name='container.host']", "value", self.dcs.get_value("Domains.REGISTRY")),
                     ("//property[@name='container.security.credential.password']", "value",
                      self.dcs.get_value("KeystorePass.REGISTRY")),
@@ -137,7 +139,7 @@ class DaemonCerts(object):
                 ("coreServices.targetsystemfactory.xnjs.configfile","conf/xnjs_legacy.xml"),
                 ("container.sitename",self.dcs.get_value("GCID")),
                 ("container.externalregistry.use","true"),
-                ("container.externalregistry.url","https://%s:8080/REGISTRY/services/Registry?res=default_registry"%(self.dcs.get_value("Domains.GATEWAY"))),
+                ("container.externalregistry.url","https://%s:%d/REGISTRY/services/Registry?res=default_registry"%(self.dcs.get_value("Domains.GATEWAY"),self.dcs.get_value("Port.GATEWAY"))),
                 ("container.security.rest.authentication.order","UNITY"),
                 ("container.security.rest.authentication.UNITY.class","eu.unicore.services.rest.security.UnitySAMLAuthenticator"),
                 ("container.security.rest.authentication.UNITY.address","https://%s:2443/unicore-soapidp/saml2unicoreidp-soap/AuthenticationService"%self.dcs.get_value("Domains.UNITY")),
@@ -156,7 +158,7 @@ class DaemonCerts(object):
             ],
             get_path("gateway", "gateway.properties"):
             [
-                ("gateway.hostname", "https://%s:8080" % self.dcs.get_value("Domains.GATEWAY")),
+                ("gateway.hostname", "https://%s:%d" % (self.dcs.get_value("Domains.GATEWAY"),self.dcs.get_value("Port.GATEWAY"))),
                 ("gateway.httpServer.requireClientAuthn", "false")
             ],
             get_path("gateway", "security.properties"):
@@ -204,7 +206,7 @@ class DaemonCerts(object):
             get_path("workflow", "uas.config"):
             [
                 ("container.sitename", self.dcs.get_value("WF-GCID")),
-                ("container.externalregistry.url","https://%s:8080/REGISTRY/services/Registry?res=default_registry"%self.dcs.get_value("Domains.GATEWAY")),
+                ("container.externalregistry.url","https://%s:%d/REGISTRY/services/Registry?res=default_registry"%(self.dcs.get_value("Domains.GATEWAY"),self.dcs.get_value("Port.GATEWAY"))),
                 ("container.security.attributes.XUUDB.xuudbHost","https://%s"%self.dcs.get_value("Domains.XUUDB")),
                 ("container.security.attributes.XUUDB.xuudbGCID", self.dcs.get_value("GCID")),
                 ("container.security.rest.authentication.UNITY.class","eu.unicore.services.rest.security.UnitySAMLAuthenticator"),
@@ -234,8 +236,8 @@ class DaemonCerts(object):
             get_path("servorch", "uas.config"):
             [
                 ("container.externalregistry.url",
-                 "https://%s:8080/REGISTRY/services/Registry?res=default_registry" % self.dcs.get_value(
-                     "Domains.GATEWAY")),
+                 "https://%s:%d/REGISTRY/services/Registry?res=default_registry" % (self.dcs.get_value(
+                     "Domains.GATEWAY"),self.dcs.get_value("Port.GATEWAY"))),
                 ("container.security.attributes.XUUDB.xuudbHost",
                  "https://%s" % self.dcs.get_value("Domains.XUUDB")),
                 ("container.security.attributes.XUUDB.xuudbGCID", self.dcs.get_value("GCID")),
@@ -356,9 +358,11 @@ class DaemonCerts(object):
                 tree = etree.parse(xmlin)
 
             for xpath,value in attrib_and_value_dict["values"]:
+                print("Changing File <%s>, Path <%s> to: %s"%(filename,xpath,value))
                 self.change_xml_value(tree,xpath,value)
 
             for xpath,attrib,value in attrib_and_value_dict["attrib"]:
+                print("Changing File <%s>, Path:Attribute <%s>:<%s> to: %s" % (filename, xpath, attrib, value))
                 self.change_xml_attrib(tree,xpath,attrib,value)
 
             with open(filename, 'w') as xmlout:
@@ -368,8 +372,10 @@ class DaemonCerts(object):
             mkdir_p(os.path.dirname(filename))
             with open(filename + ".instructions.txt",'w') as xmlout:
                 for xpath, value in attrib_and_value_dict["values"]:
+                    print("Writing Instructions in File <%s>, Path <%s> to: %s" % (filename, xpath, value))
                     xmlout.write("Change value of path <%s> to: <%s>\n"%(xpath,value))
                 for xpath, attrib, value in attrib_and_value_dict["attrib"]:
+                    print("Writing Instructions in File <%s>, Path:Attribute <%s>:<%s> to: %s" % (filename, xpath, attrib, value))
                     xmlout.write("Change attribute <%s> of path <%s> to: <%s>\n" % (attrib, xpath, value))
 
     def change_xml_value(self,tree,xpath_expression,value):
@@ -384,12 +390,9 @@ class DaemonCerts(object):
         #attrib is string
         #value is string
         root = tree.getroot()
-        test = tree.find(xpath_expression, namespaces=root.nsmap)
-        print(test)
-        print(xpath_expression)
+        xmlnode = tree.find(xpath_expression, namespaces=root.nsmap)
+        xmlnode.attrib[attrib] = value
 
-        test.attrib[attrib] = value
-        print(test.attrib[attrib])
 
     def post_update(self,dn_list):
         for filename,attrib_and_value_dict in self.static_xml_changes.items():
@@ -403,9 +406,10 @@ class DaemonCerts(object):
         pem_abs_loc = os.path.abspath(pem_rel_loc)
         unity_fqdn = self.dcs.get_value("Domains.UNITY")
         gateway_fqdn = self.dcs.get_value("Domains.GATEWAY")
+        gateway_port = self.dcs.get_value("Port.GATEWAY")
         for component,vofile in self.vo_paths:
             with open(vofile,'wt') as out:
-                out.write(write_vo_config(pem_abs_loc,component,unity_fqdn,gateway_fqdn))
+                out.write(write_vo_config(pem_abs_loc,component,unity_fqdn,gateway_fqdn,gateway_port))
 
         #Finally we write the unity config:
         unity_conf_dir = join(self.dcs.get_value("directory.unicore"),"unity","conf")
@@ -422,6 +426,7 @@ class DaemonCerts(object):
             out.write(write_unity_module())
 
     def create_add_change_plain(self,filename,key,value):
+        print("File: <%s>, Changing value of key <%s> to <%s>" % (filename, key, value))
         if os.path.isfile(filename):
             found = False
             outname = filename + '_new'

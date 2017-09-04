@@ -23,7 +23,7 @@ class DaemonCertsSettings(AbstractSettings):
             ('Domains.WORKFLOW','sameas:FQDN',"FQDN of the machine running WORKFLOW"),
             ('Domains.SERVORCH','sameas:FQDN',"FQDN of the machine running SERVORCH"),
             ('Domains.TSI','sameas:FQDN',"FQDN of the machine running TSI"),
-
+            ('Port.GATEWAY',8080,"Port of the Gateway server, this port needs to be opened."),
             ('KeystorePass.UNITY','the!uvos',"Password for the p12 keystore holding the certificate of UNITY"),
             ('KeystorePass.UNICOREX','the!njs',"Password for the p12 keystore holding the certificate of UNICOREX"),
             ('KeystorePass.REGISTRY','the!registry',"Password for the p12 keystore holding the certificate of REGISTRY"),

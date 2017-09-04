@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 
-def write_vo_config(UNITY_PEM_LOCATION,COMPONENT,UNITY_FQDN,GATEWAY_FQDN):
+def write_vo_config(UNITY_PEM_LOCATION,COMPONENT,UNITY_FQDN,GATEWAY_FQDN,GATEWAY_PORT):
     template = """# ##########################
 # General configuration
 # ##########################
@@ -25,7 +25,7 @@ vo.truststore.directoryLocations.1=%s
 # It is REQUIRED if pull mode is enabled, and must be this server's URI used to identify
 #  to the VO service. In push mode it is used as this server actor's name (note that
 #  assertions in WS security element with no actor set are also accepted).
-vo.localServerURI=https://%s:8080/%s
+vo.localServerURI=https://%s:%d/%s
 
 # Unity server identification URI
 vo.voServerURI=https://%s:2443/unicore-soap-aip/saml2unicoreidp-soap/AssertionQueryService
@@ -82,5 +82,5 @@ vo.pull.cacheTtl=-1
 # Enable this mode? Default is false. Usually you can leave it with true value and control
 # whether the mode is enabled by using (or not) a respective attribute source in uas.config.
 vo.push.enable=false
-"""%(COMPONENT,UNITY_PEM_LOCATION,GATEWAY_FQDN,COMPONENT,UNITY_FQDN,UNITY_FQDN)
+"""%(COMPONENT,UNITY_PEM_LOCATION,GATEWAY_FQDN,GATEWAY_PORT,COMPONENT,UNITY_FQDN,UNITY_FQDN)
     return template
