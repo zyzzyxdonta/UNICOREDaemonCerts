@@ -159,7 +159,8 @@ class DaemonCerts(object):
             ],
             get_path("gateway", "gateway.properties"):
             [
-                ("gateway.hostname", "https://%s:%d" % (self.dcs.get_value("Domains.GATEWAY"),self.dcs.get_value("Port.GATEWAY"))),
+                #("gateway.hostname", "https://%s:%d" % (self.dcs.get_value("Domains.GATEWAY"),self.dcs.get_value("Port.GATEWAY"))),
+                ("gateway.hostname", "https://0.0.0.0:%d" % (self.dcs.get_value("Port.GATEWAY"))),
                 ("gateway.httpServer.requireClientAuthn", "false")
             ],
             get_path("gateway", "security.properties"):
