@@ -154,7 +154,8 @@ class DaemonCerts(object):
             [
                 ("REGISTRY", "https://%s:7778"% self.dcs.get_value("Domains.REGISTRY")),
                 ("SERVORCH", "https://%s:7701" % self.dcs.get_value("Domains.SERVORCH")),
-                (self.dcs.get_value("GCID"), "https://%s:7777"% self.dcs.get_value("Domains.UNICOREX"))
+                (self.dcs.get_value("GCID"), "https://%s:7777"% self.dcs.get_value("Domains.UNICOREX")),
+                (self.dcs.get_value("WF-GCID"), "https://%s:7700" % self.dcs.get_value("Domains.WORKFLOW"))
             ],
             get_path("gateway", "gateway.properties"):
             [
