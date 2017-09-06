@@ -79,7 +79,8 @@ class DaemonCerts(object):
                 "attrib" : [
                     ("//eng:Property[@name='CLASSICTSI.ssl.disable']","value","false"),
                     ("//eng:Property[@name='CLASSICTSI.machine']", "value", "%s" %self.dcs.get_value("Domains.TSI")),
-                    ("//eng:Property[@name='XNJS.idbfile']", "value", "conf/sidbdir")
+                    ("//eng:Property[@name='XNJS.idbfile']", "value", "conf/sidbdir"),
+                    ("//eng:Property[@name='XNJS.filespace']", "value", join(self.dcs.get_value("directory.userfiles"),"FILESPACE"))
                 ]
             },
             get_path("unicorex", "wsrflite.xml"):
@@ -475,6 +476,9 @@ class DaemonCerts(object):
         storagefactorydir = join(self.dcs.get_value("directory.userfiles"),"storage-factory")
         mkdir_p(storagefactorydir)
         os.chmod(storagefactorydir,0o1777)
+        filespacedir = join(self.dcs.get_value("directory.userfiles"),"FILESPACE")
+        mkdir_p(filespacedir)
+        os.chmod(filespacedir,0o1777)
 
     def create_add_change_plain(self,filename,key,value):
         print("File: <%s>, Changing value of key <%s> to <%s>" % (filename, key, value))
