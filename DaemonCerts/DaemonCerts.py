@@ -94,9 +94,9 @@ class DaemonCerts(object):
                     ("//property[@name='container.host']", "value", self.dcs.get_value("Domains.UNICOREX") ),
                     ("//property[@name='container.security.credential.password']", "value", self.dcs.get_value("KeystorePass.UNICOREX")),
                     ("//property[@name='container.client.serverHostnameChecking']", "value", "WARN"),
-                    ("//property[@name='container.wsrf.lifetime.default']", "value", self.dcs.get_value("lifetime.default")),
-                    ("//property[@name='container.wsrf.lifetime.JobManagement']", "value", self.dcs.get_value("lifetime.default")),
-                    ("//property[@name='container.wsrf.lifetime.StorageManagement']", "value", self.dcs.get_value("lifetime.default")),
+                    ("//property[@name='container.wsrf.lifetime.default']", "value", str(self.dcs.get_value("lifetime.default"))),
+                    ("//property[@name='container.wsrf.lifetime.JobManagement']", "value", str(self.dcs.get_value("lifetime.default"))),
+                    ("//property[@name='container.wsrf.lifetime.StorageManagement']", "value", str(self.dcs.get_value("lifetime.default"))),
                 ]
             },
             get_path("workflow", "wsrflite.xml"):
@@ -111,8 +111,8 @@ class DaemonCerts(object):
                     ("//property[@name='container.host']", "value", self.dcs.get_value("Domains.WORKFLOW")),
                     ("//property[@name='container.security.credential.password']", "value", self.dcs.get_value("KeystorePass.WORKFLOW")),
                     ("//property[@name='container.client.serverHostnameChecking']", "value", "WARN"),
-                    ("//property[@name='container.wsrf.lifetime.default']", "value", self.dcs.get_value("lifetime.workflow")),
-                    ("//property[@name='container.wsrf.lifetime.default.WorkflowManagement']", "value", self.dcs.get_value("lifetime.workflow"))
+                    ("//property[@name='container.wsrf.lifetime.default']", "value", str(self.dcs.get_value("lifetime.workflow"))),
+                    ("//property[@name='container.wsrf.lifetime.default.WorkflowManagement']", "value", str(self.dcs.get_value("lifetime.workflow")))
                 ]
             },
             get_path("servorch", "wsrflite.xml"):
