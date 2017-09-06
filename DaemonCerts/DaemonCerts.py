@@ -592,7 +592,7 @@ class DaemonCerts(object):
         cakey_filename = join(cakey_dir,"cakey.pem")
         with open(cakey_filename, "w") as out:
             out.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, key).decode("UTF-8"))
-        os.chmod(out, 0o600)
+        os.chmod(cakey_filename, 0o600)
 
         cacert_filename = join(ca_path,"cacert.pem")
         with open(cacert_filename, "w") as out:
@@ -668,7 +668,7 @@ class DaemonCerts(object):
         pfxdata = pfx.export(passphrase)
         with open(priv_key_path, 'wb') as pfxfile:
             pfxfile.write(pfxdata)
-        os.chmod(pfxfile, 0o600)
+        os.chmod(priv_key_path, 0o600)
 
         if server == "UNITY":
             # Unity PEM needs to be "trusted" as saml assertion issuer by unicorex
@@ -684,7 +684,7 @@ class DaemonCerts(object):
             unity_privatekey = join(unity_pki_dir,"unity.p12")
             with open(unity_privatekey, 'wb') as pfxfile:
                 pfxfile.write(pfxdata)
-            os.chmod(pfxfile, 0o600)
+            os.chmod(unity_privatekey, 0o600)
 
             mkdir_p(unity_truststore_path)
             unity_truststore_path = join(unity_truststore_path,"truststore.pem")
