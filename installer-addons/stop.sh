@@ -8,7 +8,7 @@ echo "Stopping servers..."
 INST=`dirname $0`
 cd $INST
 
-if [ -e unicorex ] 
+if [ -d unicorex/bin ]
 then
   echo "Stopping UNICORE/X execution server process "
   cd unicorex
@@ -16,7 +16,7 @@ then
   cd ..
 fi
 
-if [ -e registry ] 
+if [ -d registry/bin ]
 then
   echo "Stopping UNICORE/X registry server process "
   cd registry
@@ -24,7 +24,7 @@ then
   cd ..
 fi
 
-if [ -e gateway ] 
+if [ -d gateway/bin ]
 then
   echo "Stopping Gateway process "
   cd gateway
@@ -32,7 +32,7 @@ then
   cd ..
 fi
 
-if [ -e servorch ] 
+if [ -d servorch/bin ]
 then
   echo "Stopping Service Orchestrator server process "
   cd servorch
@@ -40,7 +40,7 @@ then
   cd ..
 fi
 
-if [ -e workflow ] 
+if [ -d workflow/bin ]
 then
   echo "Stopping Workflow server process "
   cd workflow
@@ -48,7 +48,7 @@ then
   cd ..
 fi
 
-if [ -e xuudb ] 
+if [ -d xuudb/bin ]
 then
   echo "Stopping XUUDB server process "
   cd xuudb
@@ -56,7 +56,7 @@ then
   cd ..
 fi
 
-if [ -e unity ] 
+if [ -d unity/bin ]
 then
   echo "Stopping Unity server process "
   cd unity
