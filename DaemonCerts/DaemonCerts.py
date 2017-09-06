@@ -98,6 +98,8 @@ class DaemonCerts(object):
                     ("//property[@name='container.wsrf.lifetime.default']", "value", str(self.dcs.get_value("lifetime.default"))),
                     ("//property[@name='container.wsrf.lifetime.default.JobManagement']", "value", str(self.dcs.get_value("lifetime.default"))),
                     ("//property[@name='container.wsrf.lifetime.default.StorageManagement']", "value", str(self.dcs.get_value("lifetime.default"))),
+                    ("//service[@name='StorageFactory']", "enable", "true")
+
                 ]
             },
             get_path("workflow", "wsrflite.xml"):
