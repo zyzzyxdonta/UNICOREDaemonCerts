@@ -139,6 +139,7 @@ class DaemonCerts(object):
             [
                 ("coreServices.targetsystemfactory.xnjs.configfile","conf/xnjs_legacy.xml"),
                 ("container.sitename",self.dcs.get_value("GCID")),
+                ("coreServices.sms.factory.DEFAULT.path",join(self.dcs.get_value("directory.unicore"),"storage-factory")),
                 ("container.externalregistry.use","true"),
                 ("container.externalregistry.url","https://%s:%d/REGISTRY/services/Registry?res=default_registry"%(self.dcs.get_value("Domains.GATEWAY"),self.dcs.get_value("Port.GATEWAY"))),
                 ("container.security.rest.authentication.order","UNITY"),
@@ -432,11 +433,16 @@ class DaemonCerts(object):
         simpleidb = join(unicorex_conf_dir,'simpleidb')
         sidbdir = join(unity_conf_dir,'sidbdir')
         mkdir_p(sidbdir)
-        shutil.move(simpleidb,sidbdir)
+        #We only move in case it exists. This allows us to run this installer more often.
+        if os.path.isfile(simpleidb):
+            shutil.move(simpleidb,sidbdir)
 
         filespacedir = join(self.dcs.get_value("directory.unicore"),"FILESPACE")
         mkdir_p(filespacedir)
         os.chmod(filespacedir,0o1777)
+        storagefactorydir = join(self.dcs.get_value("directory.unicore"),"storage-factory")
+        mkdir_p(storagefactorydir)
+        os.chmod(storagefactorydir,0o1777)
 
     def create_add_change_plain(self,filename,key,value):
         print("File: <%s>, Changing value of key <%s> to <%s>" % (filename, key, value))
