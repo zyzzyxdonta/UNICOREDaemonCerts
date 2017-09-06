@@ -95,8 +95,8 @@ class DaemonCerts(object):
                     ("//property[@name='container.security.credential.password']", "value", self.dcs.get_value("KeystorePass.UNICOREX")),
                     ("//property[@name='container.client.serverHostnameChecking']", "value", "WARN"),
                     ("//property[@name='container.wsrf.lifetime.default']", "value", str(self.dcs.get_value("lifetime.default"))),
-                    ("//property[@name='container.wsrf.lifetime.JobManagement']", "value", str(self.dcs.get_value("lifetime.default"))),
-                    ("//property[@name='container.wsrf.lifetime.StorageManagement']", "value", str(self.dcs.get_value("lifetime.default"))),
+                    ("//property[@name='container.wsrf.lifetime.default.JobManagement']", "value", str(self.dcs.get_value("lifetime.default"))),
+                    ("//property[@name='container.wsrf.lifetime.default.StorageManagement']", "value", str(self.dcs.get_value("lifetime.default"))),
                 ]
             },
             get_path("workflow", "wsrflite.xml"):
