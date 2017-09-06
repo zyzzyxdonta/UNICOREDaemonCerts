@@ -322,7 +322,9 @@ class DaemonCerts(object):
                         cert.Country=DE \\
                         cert.Locality=Karlsruhe \\
                         "cert.State=BW" \\
-                        GCID=MY-SITE
+                        GCID=MY-SITE \\
+                        Port.GATEWAY=8080 \\
+                        directory.userfiles=/network/fast/directory 
      
     Please note that Country can only be two letter code. Individiual daemon domains can specified using: Domains.SERVER=FQDN. This is completely optional. Don't do it unless you really need it.
     The program will generate the certs and the following files:
