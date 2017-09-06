@@ -54,7 +54,7 @@ class DaemonCertsSettings(AbstractSettings):
             ('directory.ca', './CA', 'Directory where the self signed CA will be put'),
             ('directory.support', './supportfiles', 'Directory where supporting information will be put'),
             ('directory.unicore', './unicore', 'Directory where changes to the template configurations should be put'),
-            ('directory.userfiles', 'sameas:directory.unicore ', 'Directory, where job storage will be put during processing. Has to be fast and accesible to all users. UNICORE user has to have write access during creation.')
+            ('directory.userfiles', './userfiles', 'Directory, where job storage will be put during processing. Has to be fast and accesible to all users. UNICORE user has to have write access during creation.')
         ]
 
         for valuename,default,explanation in defaults:
