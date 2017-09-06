@@ -41,6 +41,9 @@ class DaemonCertsSettings(AbstractSettings):
             ('cert.Organization', 'MyOrganization', "O-Field in the DN. Your company"),
             ('cert.OrganizationalUnit', 'IT Services',"OU-Field in the DN. Where the Admin works in. For example IT Services."),
 
+            ('lifetime.default',8035200,"Lifetime until jobs are deleted. Default are 3 months."),
+            ('lifetime.workflow','sameas:lifetime.default',"Lifetime until jobs are deleted. Defaults to lifetime.default (3 months)."),
+
             ('GCID','CLUSTER-SITE','GCID of the UNICORE/X.'),
             ('WF-GCID', 'WORKFLOW-SITE', 'GCID of the WORKFLOW server.'),
 
