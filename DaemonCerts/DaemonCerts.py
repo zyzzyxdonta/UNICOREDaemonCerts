@@ -78,7 +78,8 @@ class DaemonCerts(object):
                 "values" : [],
                 "attrib" : [
                     ("//eng:Property[@name='CLASSICTSI.ssl.disable']","value","false"),
-                    ("//eng:Property[@name='CLASSICTSI.machine']", "value", "%s" %self.dcs.get_value("Domains.TSI"))
+                    ("//eng:Property[@name='CLASSICTSI.machine']", "value", "%s" %self.dcs.get_value("Domains.TSI")),
+                    ("//eng:Property[@name='XNJS.idbfile']", "value", "conf/sidbdir")
                 ]
             },
             get_path("unicorex", "wsrflite.xml"):
@@ -426,6 +427,16 @@ class DaemonCerts(object):
         module_init_file = join(module_init_file,"unicoreQuickstart.module")
         with open(module_init_file,'w') as out:
             out.write(write_unity_module())
+
+        unicorex_conf_dir = join(self.dcs.get_value("directory.unicore"), "unicorex", "conf")
+        simpleidb = join(unicorex_conf_dir,'simpleidb')
+        sidbdir = join(unity_conf_dir,'sidbdir')
+        mkdir_p(sidbdir)
+        shutil.move(simpleidb,sidbdir)
+
+        filespacedir = join(self.dcs.get_value("directory.unicore"),"FILESPACE")
+        mkdir_p(filespacedir)
+        os.chmod(filespacedir,0o1777)
 
     def create_add_change_plain(self,filename,key,value):
         print("File: <%s>, Changing value of key <%s> to <%s>" % (filename, key, value))
