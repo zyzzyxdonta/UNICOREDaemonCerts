@@ -145,7 +145,7 @@ class DaemonCerts(object):
                 ("coreServices.targetsystemfactory.xnjs.configfile","conf/xnjs_legacy.xml"),
                 ("container.sitename",self.dcs.get_value("GCID")),
                 ("coreServices.sms.factory.DEFAULT.path",join(self.dcs.get_value("directory.userfiles"),"storage-factory")),
-                ("coreServices.defaultsms.path",join(self.dcs.get_value("directory.userfiles"),"storage"),
+                ("coreServices.defaultsms.path",join(self.dcs.get_value("directory.userfiles"),"storage")),
                 ("container.externalregistry.use","true"),
                 ("container.externalregistry.url","https://%s:%d/REGISTRY/services/Registry?res=default_registry"%(self.dcs.get_value("Domains.GATEWAY"),self.dcs.get_value("Port.GATEWAY"))),
                 ("container.security.rest.authentication.order","UNITY"),
