@@ -139,7 +139,8 @@ class DaemonCerts(object):
             [
                 ("coreServices.targetsystemfactory.xnjs.configfile","conf/xnjs_legacy.xml"),
                 ("container.sitename",self.dcs.get_value("GCID")),
-                ("coreServices.sms.factory.DEFAULT.path",join(self.dcs.get_value("directory.unicore"),"storage-factory")),
+                ("coreServices.sms.factory.DEFAULT.path",join(self.dcs.get_value("directory.userfiles"),"storage-factory")),
+                ("coreServices.defaultsms.path",join(self.dcs.get_value("directory.userfiles"),"storage"),
                 ("container.externalregistry.use","true"),
                 ("container.externalregistry.url","https://%s:%d/REGISTRY/services/Registry?res=default_registry"%(self.dcs.get_value("Domains.GATEWAY"),self.dcs.get_value("Port.GATEWAY"))),
                 ("container.security.rest.authentication.order","UNITY"),
@@ -354,6 +355,30 @@ class DaemonCerts(object):
                     dn_list.append((server,dn))
 
         self.post_update(dn_list)
+        with open(join(support_path_dir, "urlinfo.txt"), 'w') as out:
+            gwurl = self.dcs.get_value("Domains.GATEWAY")
+            unityurl = self.dcs.get_value("Domains.UNITY")
+            port = self.dcs.get_value("Port.GATEWAY")
+            gcid = self.dcs.get_value("GCID")
+            wf_gcid = self.dcs.get_value("WF-GCID")
+            cert = join(self.dcs.get_value("directory.certs"),'trusted','cacert.pem')
+            infostring = """To setup REST Clients, the following two URLs are required:
+   Base URI: https://%s:%d/%s/rest/core
+   Workflow Link: https://%s:%d/%s/rest/workflows
+            
+ To setup UNICORE Clients, the following two URLs are required:
+   Unity Address: https://%s:2443/unicore-soapidp/saml2unicoreidp-soap/AuthenticationService
+   Registry Address: https://%s:%d/REGISTRY/services/Registry?res=default_registry
+   They also require access to the following truststore: %s
+   Please distribute this file and the truststore to all your users.
+            """ %(gwurl,port,gcid,
+                  gwurl,port,wf_gcid,
+                  unityurl,
+                  gwurl,port,
+                  cert)
+            print(infostring)
+            out.write(infostring)
+
 
     def update_xml(self,filename,attrib_and_value_dict):
         tree = None
@@ -437,10 +462,10 @@ class DaemonCerts(object):
         if os.path.isfile(simpleidb):
             shutil.move(simpleidb,sidbdir)
 
-        filespacedir = join(self.dcs.get_value("directory.unicore"),"FILESPACE")
+        filespacedir = join(self.dcs.get_value("directory.userfiles"),"storage")
         mkdir_p(filespacedir)
         os.chmod(filespacedir,0o1777)
-        storagefactorydir = join(self.dcs.get_value("directory.unicore"),"storage-factory")
+        storagefactorydir = join(self.dcs.get_value("directory.userfiles"),"storage-factory")
         mkdir_p(storagefactorydir)
         os.chmod(storagefactorydir,0o1777)
 
