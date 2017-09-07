@@ -208,7 +208,9 @@ class DaemonCerts(object):
             get_path("unity","unityServer.conf"):
             [
                 ("unityServer.core.initialAdminPassword",self.random_string(16) if self.dcs.get_value("AdminPass") == '<SCRAMBLE>' else self.dcs.get_value("AdminPass")),
-                ("unityServer.core.httpServer.host", self.dcs.get_value("Domains.UNITY")),
+                #("unityServer.core.httpServer.host", self.dcs.get_value("Domains.UNITY")),
+                #unity listens on every address:
+                ("unityServer.core.httpServer.host", "0.0.0.0"),
                 ("unityServer.core.httpServer.advertisedHost",  self.dcs.get_value("Domains.UNITY")),
                 ("$include.oauthAS","<Comment>"),
                 ("$include.demoContents","<Comment>"),
