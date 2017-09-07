@@ -162,6 +162,7 @@ class DaemonCerts(object):
             ],
             get_path("gateway", "connections.properties"):
             [
+                ("DEMO-SITE", "<Comment>"),
                 ("REGISTRY", "https://%s:7778"% self.dcs.get_value("Domains.REGISTRY")),
                 ("SERVORCH", "https://%s:7701" % self.dcs.get_value("Domains.SERVORCH")),
                 (self.dcs.get_value("GCID"), "https://%s:7777"% self.dcs.get_value("Domains.UNICOREX")),
@@ -496,6 +497,9 @@ class DaemonCerts(object):
                             splitline = line.split("=")
                             keypruned = splitline[0].replace(" ","")
                             if keypruned == key or keypruned == "#%s"%key:
+                                if found:
+                                    #If we have keys twice, we skip.
+                                    continue
                                 found = True
                                 if value == "<UnComment>":
                                     if line.startswith("#"):
