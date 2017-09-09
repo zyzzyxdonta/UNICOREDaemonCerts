@@ -72,7 +72,7 @@ vo.pull.voServerURL=https://%s:2443/unicore-soap-aip/saml2unicoreidp-soap/Assert
 vo.pull.disableIfAttributesWerePushed=false
 
 # Caching time of pulled attributes (in seconds). Use negative value to turn off the cache.
-vo.pull.cacheTtl=-1
+vo.pull.cacheTtl=300
 
 
 # ##########################
