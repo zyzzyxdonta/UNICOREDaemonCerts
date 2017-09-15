@@ -322,17 +322,18 @@ class DaemonCerts(object):
 
    CreateDaemonCerts.py FQDN=myhost.domain.com \\
                         cert.email=admin@your_mail.de \\
-                        "cert.OrganizationalUnit=IT Services" \\
-                        "cert.Organization=NM GmbH" \\
+                        cert.OrganizationalUnit=IT \\
+                        cert.Organization=NM \\
                         cert.Country=DE \\
                         cert.Locality=Karlsruhe \\
-                        "cert.State=BW" \\
+                        cert.State=BW \\
                         GCID=MY-SITE \\
                         WF-GCID=MY-WORKFLOW \\
                         Port.GATEWAY=8080 \\
                         directory.userfiles=/network/fast/directory 
      
     Please note that Country can only be two letter code. Individiual daemon domains can specified using: Domains.SERVER=FQDN. This is completely optional. Don't do it unless you really need it.
+    Please avoid spaces everywhere.
     The program will generate the certs and the following files:
     rfc4514_dns.txt contains the generated server DNs in the rfc4514 format.
     xuudb_commands.sh contains the server DNs again including the commands, which have to be executed to add them to XUUDB.
@@ -346,9 +347,15 @@ class DaemonCerts(object):
 
     def main(self):
         ca_path = self.make_ca_dir()
-        if not os.path.isfile(join(ca_path,"cacert.pem")):
+        cacert_path = join(ca_path,"cacert.pem")
+        if not os.path.isfile(cacert_path):
             dn = self.gen_ca()
             print("Generated new CA, DN: <%s>"%dn)
+
+        #Here we save the pem again in the trusted directory:
+        trustedpath = self.make_truststore_dir()
+        trustedpem = join(trustedpath,"cacert.pem")
+        shutil.copy(cacert_path,trustedpem)
 
         support_path_dir = self.dcs.get_value("directory.support")
         xuudb_file = join(support_path_dir,"xuudb_commands.sh")
@@ -608,12 +615,6 @@ class DaemonCerts(object):
 
         cacert_filename = join(ca_path,"cacert.pem")
         with open(cacert_filename, "w") as out:
-            out.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode("UTF-8"))
-
-        #Here we save the pem again in the trusted directory:
-        trustedpath = self.make_truststore_dir()
-        trustedpem = join(trustedpath,"cacert.pem")
-        with open(trustedpem, "w") as out:
             out.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode("UTF-8"))
 
         return self.name_to_rfc4514(cert.get_subject())
