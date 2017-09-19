@@ -44,20 +44,6 @@ class DaemonCerts(object):
             self.write_info_text()
             sys.exit(0)
 
-        ca_path = self.dcs.get_value('directory.ca')
-        mkdir_p(ca_path)
-        serialpath = join(ca_path,"serial")
-        self.serial = None
-        if os.path.isfile(serialpath):
-            with open(serialpath,'rt') as serialfile:
-                for line in serialfile:
-                    self.serial = int(line, 16)
-                    break
-
-        if self.serial is None:
-            self.serial = 1
-
-        atexit.register(self.cleanup)
 
         unipath = self.dcs.get_value("directory.unicore")
         #builds: unicore_path/daemon_name/conf/filename:
@@ -341,38 +327,129 @@ class DaemonCerts(object):
         print(help_message)
         self.dcs.print_options(sys.stdout)
 
+    def get_message_to_ca_admin(self):
+        message = """# Dear admin of the CA. The UNICORE server system requires multiple different 
+# certificates for the server daemons. During the setup this file was therefore generated.   
+# If you run this file without editing it, all information about the certificate requests 
+# will be printed on the stdout. If you are happy with the DNs of the certificate and the
+# length of the certification, please edit the DAYS variable to your liking and remove the exit
+# in the middle of the script. 
+"""
+        return message
 
     def cleanup(self):
-        self.write_serial()
+        CAMODE=self.dcs.get_value("CAMODE")
+        if CAMODE == 'SELFSIGNED':
+            self.write_serial()
 
     def main(self):
-        ca_path = self.make_ca_dir()
-        cacert_path = join(ca_path,"cacert.pem")
-        if not os.path.isfile(cacert_path):
-            dn = self.gen_ca()
-            print("Generated new CA, DN: <%s>"%dn)
+        camode = self.dcs.get_value("CAMODE")
 
-        #Here we save the pem again in the trusted directory:
-        trustedpath = self.make_truststore_dir()
-        trustedpem = join(trustedpath,"cacert.pem")
-        shutil.copy(cacert_path,trustedpem)
+        if not camode in ["SELFSIGNED","CSR","INSTALLCSR"]:
+            print("CAMODE has to be either SELFSIGNED, CSR or INSTALLCSR, quitting")
+            sys.exit(5)
+
+        ca_path = self.make_ca_dir()
+        cacert_path = join(ca_path, "cacert.pem")
+
+        if camode == 'SELFSIGNED':
+            ca_path = self.dcs.get_value('directory.ca')
+            mkdir_p(ca_path)
+            serialpath = join(ca_path,"serial")
+            self.serial = None
+            if os.path.isfile(serialpath):
+                with open(serialpath,'rt') as serialfile:
+                    for line in serialfile:
+                        self.serial = int(line, 16)
+                        break
+
+            if self.serial is None:
+                self.serial = 1
+
+            atexit.register(self.cleanup)
+
+            if not os.path.isfile(cacert_path):
+                dn = self.gen_ca()
+                print("Generated new CA, DN: <%s>"%dn)
+
+
 
         support_path_dir = self.dcs.get_value("directory.support")
+        mkdir_p(support_path_dir)
+
+        argumentsfile = join(support_path_dir,"installer_arguments.txt")
+        with open(argumentsfile,'w') as out:
+            out.write("The script was called using the following arguments:\n")
+            out.write("CreateDaemonCerts.py %s\n"%(" ".join(self.dcs.get_original_args())))
+
         xuudb_file = join(support_path_dir,"xuudb_commands.sh")
         rfc_file = join(support_path_dir,"rfc4514_dns.txt")
-        mkdir_p(support_path_dir)
+
         dn_list = []
+
+        if camode == 'CSR':
+            #with open(xuudb_file,'w') as xuudb_com:
+            csr_dir = self.dcs.get_value("directory.csrs")
+            mkdir_p(csr_dir)
+            csr_comm_file = join(csr_dir, "sign_csrs.sh")
+            with open(csr_comm_file,'w') as csr_comms:
+                csr_comms.write("#!/bin/bash\n")
+                csr_comms.write("export DAYS=%d\n"%(self.dcs.get_value("cert.years")*365))
+                csr_comms.write(self.get_message_to_ca_admin())
+                #with open(rfc_file, 'w') as rfc:
+                gcid = self.dcs.get_value("GCID")
+                for server in self.servers:
+                    incsr = "%s.pem.csr"%server.lower()
+                    csr_comms.write('echo "Certificate request %s contains: "\n' % (incsr))
+                    csr_comms.write("openssl req -in %s -noout -text  -reqopt no_pubkey,no_sigdump,no_header,no_version\n\n"%(incsr))
+
+                csr_comms.write("exit 0 # Remove this line to actually sign the certificates using your CA.\n\n")
+                for server in self.servers:
+                    dn = self.gen_csr(server)
+                    print("Generated csr for server %s DN: <%s>" % (server,dn))
+                    #xcom = "bin/admin.sh adddn %s \"%s\" nobody server" %(gcid,dn)
+                    #xuudb_com.write("%s\n"%xcom)
+                    #rfc.write("%s\n"%dn)
+                    #self.dn_hooks(server,dn)
+                    #dn_list.append((server,dn))
+                    incsr = "%s.pem.csr"%server.lower()
+                    outpem ="%s.pem" % server.lower()
+                    csr_comms.write("openssl ca -in %s -out %s -days $DAYS\n"%(incsr,outpem))
+            FQDN = self.dcs.get_value("FQDN")
+            print("\n\n\nGenerated certificate requests in the directory %s. You can now zip \n"
+                  "this directory and mail it to your CA, for example using:\n"
+                  "zip -r %s_certificate_requests.zip %s/\n"
+                  "It contains a file sign_csrs.sh required to sign the csrs." %(csr_dir,FQDN,csr_dir))
+            print("After you get the returned pem files, please put them in the same directory as the csrs.")
+            exit(0)
+
+        # Here we save the pem again in the trusted directory:
+        trustedpath = self.make_truststore_dir()
+        trustedpem = join(trustedpath, "cacert.pem")
+        if not os.path.isfile(cacert_path):
+            if camode == 'INSTALLCSR':
+                print("Please copy the public key or the certificate chain of the certificate authority to: %s before continuing. No changes were made to the configuration."%(cacert_path))
+                print("Usually you can find this file on the website of the certificate authority.")
+                sys.exit(0)
+            else:
+                print("In self signed camode and public certificate %s. Missing, This should be impossible. Please let the developer of UNICOREDaemonCerts know."%cacert_path)
+                sys.exit(0)
+
+        shutil.copy(cacert_path, trustedpem)
+
         with open(xuudb_file,'w') as xuudb_com:
             with open(rfc_file, 'w') as rfc:
                 gcid = self.dcs.get_value("GCID")
                 for server in self.servers:
-                    dn =self.gen_server_cert(server)
+                    dn =self.gen_or_update_server_cert(server)
                     print("Generated key for server %s DN: <%s>" % (server,dn))
                     xcom = "bin/admin.sh adddn %s \"%s\" nobody server" %(gcid,dn)
                     xuudb_com.write("%s\n"%xcom)
                     rfc.write("%s\n"%dn)
                     self.dn_hooks(server,dn)
                     dn_list.append((server,dn))
+
+
 
         self.post_update(dn_list)
         with open(join(support_path_dir, "urlinfo.txt"), 'w') as out:
@@ -558,16 +635,17 @@ class DaemonCerts(object):
         ca_key_data = ""
         with open(ca_key_path,'rt') as ca_key_file:
             ca_key_data = ca_key_file.read()
-
         key = crypto.load_privatekey(crypto.FILETYPE_PEM,ca_key_data)
+        return key
 
+    def get_ca_cert(self):
+        ca_path = self.dcs.get_value('directory.ca')
         ca_cert_path = join(ca_path,"cacert.pem")
         with open(ca_cert_path,'r') as ca_cert_file:
             ca_cert_data = ca_cert_file.read()
         cert = crypto.load_certificate(crypto.FILETYPE_PEM,ca_cert_data)        
 
-        return key,cert
-
+        return cert
 
     def gen_ca(self):
         #Here we generate a self-signed CA certificate
@@ -602,7 +680,7 @@ class DaemonCerts(object):
 
         cert.set_issuer(cert.get_subject())
         cert.set_pubkey(key)
-        cert.sign(key, 'sha1')
+        cert.sign(key, 'sha256')
         self.serial+=1
 
         ca_path = self.make_ca_dir()
@@ -629,18 +707,7 @@ class DaemonCerts(object):
         #TODO: This section still requires escaping of special characters noted in rfc4514
         return estring
 
-    def gen_server_cert(self,server):
-        # create a key pair for server and sign it using the CA.
-        # CN is daemon name, SAN is FQDN
-        # In the special case of Unity we also write the PEM, as we need it for unicorex and probably the workflow server.
-        ca_key,ca_cert = self.get_ca_key()
-
-        key = crypto.PKey()
-        key.generate_key(crypto.TYPE_RSA, 2048)
-
-        years = self.dcs.get_value("cert.years")
-        cert = crypto.X509()
-        # X509 Version 3 has version number 2! It's the logical choice
+    def set_cert_attributes(self,server,cert):
         cert.set_version(2)
         CERT_C = self.dcs.get_value("cert.Country")
         CERT_ST = self.dcs.get_value("cert.State")
@@ -648,7 +715,7 @@ class DaemonCerts(object):
         CERT_O = self.dcs.get_value("cert.Organization")
         CERT_OU = self.dcs.get_value("cert.OrganizationalUnit")
         CERT_EMAIL = self.dcs.get_value("cert.email")
-        FQDN = self.dcs.get_value("Domains.%s"%server)
+        FQDN = self.dcs.get_value("Domains.%s" % server)
 
         SAN = "DNS:%s, email:%s" % (FQDN, CERT_EMAIL)
 
@@ -658,23 +725,90 @@ class DaemonCerts(object):
         cert.get_subject().O = CERT_O
         cert.get_subject().OU = CERT_OU
         cert.get_subject().CN = server
-        cert.set_serial_number(self.serial)
-
         cert.add_extensions(self.get_san_extension(SAN))
 
-        cert.gmtime_adj_notBefore(0)
-        cert.gmtime_adj_notAfter(years * 365 * 24 * 60 * 60)
 
-        cert.set_issuer(ca_cert.get_subject())
+    def gen_csr(self,server):
+        key = crypto.PKey()
+        key.generate_key(crypto.TYPE_RSA, 2048)
+
+        cert = crypto.X509Req()
+        # X509 Version 3 has version number 2! It's the logical choice
+        self.set_cert_attributes(server,cert)
         cert.set_pubkey(key)
-        cert.sign(ca_key, 'sha1')
-        self.serial += 1
-
+        cert.sign(key,digest="sha256")
         certpath, unity_path = self.make_cert_dirs()
-
         priv_key_path = join(certpath, server.lower()) + ".p12"
 
-        passphrase = self.dcs.get_value('KeystorePass.%s'%server)
+        passphrase = self.dcs.get_value('KeystorePass.%s' % server)
+        pfx = crypto.PKCS12Type()
+        pfx.set_privatekey(key)
+        #pfx.set_certificate(cert)
+        pfxdata = pfx.export(passphrase)
+        with open(priv_key_path, 'wb') as pfxfile:
+            pfxfile.write(pfxdata)
+        os.chmod(priv_key_path, 0o600)
+
+        csr_dir = self.dcs.get_value("directory.csrs")
+        mkdir_p(csr_dir)
+        csr_path = join(csr_dir, server.lower()) + ".pem.csr"
+
+        with open(csr_path,'wb') as out:
+            out.write(crypto.dump_certificate_request(crypto.FILETYPE_PEM, cert))
+
+        return self.name_to_rfc4514(cert.get_subject())
+
+    def load_private_key_p12(self,path,passphrase):
+        with open(path,'rb') as int:
+            p12 = crypto.load_pkcs12(int.read(),passphrase)
+            return p12.get_privatekey()
+
+    def load_certificate(self,path):
+        with open(path,'rb') as int:
+            print("Loading",path)
+            return crypto.load_certificate(crypto.FILETYPE_PEM,int.read())
+
+    def gen_or_update_server_cert(self,server):
+        certpath, unity_path = self.make_cert_dirs()
+        priv_key_path = join(certpath, server.lower()) + ".p12"
+        passphrase = self.dcs.get_value('KeystorePass.%s' % server)
+        camode = self.dcs.get_value("CAMODE")
+        if os.path.isfile(priv_key_path):
+            key = self.load_private_key_p12(priv_key_path,passphrase)
+        else:
+            # create a key pair for server and sign it using the CA.
+            # CN is daemon name, SAN is FQDN
+            # In the special case of Unity we also write the PEM, as we need it for unicorex and probably the workflow server.
+            assert(camode == "SELFSIGNED")
+            # We only do this in this step in case we have our own CA
+            key = crypto.PKey()
+            key.generate_key(crypto.TYPE_RSA, 2048)
+
+        ca_cert = self.get_ca_cert()
+        if camode == 'INSTALLCSR':
+            csrdir = self.dcs.get_value("directory.csrs")
+            mypem = join(csrdir,server.lower()+".pem")
+            if not os.path.isfile(mypem):
+                print("Could not find file %s. Please make sure you have the files of the certificate authority at the correct place and restart. Exiting."%mypem)
+                sys.exit(5)
+            cert = self.load_certificate(mypem)
+        else:
+            #self signed mode
+            assert(self.dcs.get_value("CAMODE") == "SELFSIGNED")
+            ca_key= self.get_ca_key()
+            years = self.dcs.get_value("cert.years")
+            cert = crypto.X509()
+            self.set_cert_attributes(server,cert)
+
+            cert.set_serial_number(self.serial)
+            cert.gmtime_adj_notBefore(0)
+            cert.gmtime_adj_notAfter(years * 365 * 24 * 60 * 60)
+
+            cert.set_issuer(ca_cert.get_subject())
+            cert.set_pubkey(key)
+            cert.sign(ca_key, 'sha256')
+            self.serial += 1
+
         pfx = crypto.PKCS12Type()
         pfx.set_privatekey(key)
         pfx.set_certificate(cert)

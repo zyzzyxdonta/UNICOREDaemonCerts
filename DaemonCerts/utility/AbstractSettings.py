@@ -88,12 +88,16 @@ yaml.add_representer(AttributeDict, represent_attributedict)
 class AbstractSettings(object):
     my_instance = None
     def __init__(self,name,logger = None):
+        self.original_args = None
         self.logger = logger or logging.getLogger(__name__)
         self.name = name
         self.settings_container = AttributeDict()
         self.explanations = AttributeDict()
         self._set_defaults()
         pass
+
+    def get_original_args(self):
+        return self.original_args
 
     def _cast_string_to_correct_type(self,string):
         #Negative Numbers isdigit:
@@ -209,6 +213,7 @@ class AbstractSettings(object):
     #if args contains abc.def=640.0, self["abc"]["def"]=640.0 will be set
     #with createdicts == False, the dicts have to exist already
     def parse_eq_args(self,args, createdicts = False):
+        self.original_args = args
         for argtuple in args:
             self.logger.debug("Parsing:",argtuple)
             try:

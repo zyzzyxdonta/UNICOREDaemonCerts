@@ -48,10 +48,12 @@ class DaemonCertsSettings(AbstractSettings):
             ('WF-GCID', 'WORKFLOW-SITE', 'GCID of the WORKFLOW server.'),
 
             ('AUTHSERVER','UNITY','Auth using UNITY or XUUDB (case sensitive, can only be one of the two words)'),
+            ('CAMODE', 'SELFSIGNED', 'Mode of the CA. SELFSIGNED generates a new self-signed CA in the directory.ca directory. CSR generates certificate requests and exits the setup. INSTALLCSR is the second step after getting a response from the CA.'),
             ('AdminPass','<SCRAMBLE>','Initial password of the unity admin user. Default: Random password. Will be found in cleartext in unityServer.conf'),
 
             ('directory.certs','./unicore/certs','Directory where all the certificates will be put'),
             ('directory.ca', './CA', 'Directory where the self signed CA will be put'),
+            ('directory.csrs', './csrs', 'Directory where the certificate requests will be put, only in CSR mode.'),
             ('directory.support', './supportfiles', 'Directory where supporting information will be put'),
             ('directory.unicore', './unicore', 'Directory where changes to the template configurations should be put'),
             ('directory.userfiles', './userfiles', 'Directory, where job storage will be put during processing. Has to be fast and accesible to all users. UNICORE user has to have write access during creation.')
