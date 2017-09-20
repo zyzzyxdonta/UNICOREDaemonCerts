@@ -708,6 +708,7 @@ class DaemonCerts(object):
         return estring
 
     def set_cert_attributes(self,server,cert):
+        # X509 Version 3 has version number 2! It's the logical choice
         cert.set_version(2)
         CERT_C = self.dcs.get_value("cert.Country")
         CERT_ST = self.dcs.get_value("cert.State")
@@ -729,18 +730,14 @@ class DaemonCerts(object):
 
 
     def gen_csr(self,server):
-        key = crypto.PKey()
-        key.generate_key(crypto.TYPE_RSA, 2048)
-
-        cert = crypto.X509Req()
-        # X509 Version 3 has version number 2! It's the logical choice
-        self.set_cert_attributes(server,cert)
-        cert.set_pubkey(key)
-        cert.sign(key,digest="sha256")
         certpath, unity_path = self.make_cert_dirs()
         priv_key_path = join(certpath, server.lower()) + ".p12"
-
         passphrase = self.dcs.get_value('KeystorePass.%s' % server)
+        if os.path.isfile(priv_key_path):
+            key = self.load_private_key_p12(priv_key_path,passphrase)
+        else:
+            key = crypto.PKey()
+            key.generate_key(crypto.TYPE_RSA, 2048)
         pfx = crypto.PKCS12Type()
         pfx.set_privatekey(key)
         #pfx.set_certificate(cert)
@@ -748,6 +745,11 @@ class DaemonCerts(object):
         with open(priv_key_path, 'wb') as pfxfile:
             pfxfile.write(pfxdata)
         os.chmod(priv_key_path, 0o600)
+
+        cert = crypto.X509Req()
+        self.set_cert_attributes(server,cert)
+        cert.set_pubkey(key)
+        cert.sign(key,digest="sha256")
 
         csr_dir = self.dcs.get_value("directory.csrs")
         mkdir_p(csr_dir)
