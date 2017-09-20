@@ -627,7 +627,7 @@ class DaemonCerts(object):
             tsi_confdir = join(unicore_dir,"tsi_selected","conf")
             mkdir_p(tsi_confdir)
             tsi_conffile = join(tsi_confdir,"tsi.properties")
-            self.create_add_change_plain(tsi_conffile,"tsi.allowed_dn.1","\"%s\"" %dn)
+            self.create_add_change_plain(tsi_conffile,"tsi.allowed_dn.1",dn)
 
     def get_ca_key(self):
         ca_path = self.dcs.get_value('directory.ca')
