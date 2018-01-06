@@ -39,6 +39,22 @@ In settings[directory.unicore]:
 * The TSI certficates in PEM format
 * Changes to all config files, which require a change to the DN. If these config files already exist, they are updating. If they don't exist, new files are written containing only the lines, which need to be updated.
 
+## Using an external CA with certificate signing requests
+If your infrastructure requires the use of externally signed certificates (if you don't explicitly know what this is, you don't need it), a two step install process is supported:
+Use CAMODE=CSR to generate CSRs:
+
+    CreateDaemonCerts.py FQDN=myhost.domain.com cert.email=admin@your_mail.de cert.OrganizationalUnit=IN "cert.Organization=Karlsruhe Institute of Technology" cert.Country=DE cert.Locality=Karlsruhe cert.State=Baden-Wuerttemberg GCID=MY-SITE WF-GCID=MY-WORKFLOW Port.GATEWAY=8080 CAMODE=CSR
+
+It will generate all CSRs in the csrs directory together with a script showing how to sign them (which your CA will most probably ignore).
+Send the CSRs to your CA and after you get your PEMs back, run the same command again with CAMODE=INSTALLCSR:
+
+    CreateDaemonCerts.py FQDN=myhost.domain.com cert.email=admin@your_mail.de cert.OrganizationalUnit=IN "cert.Organization=Karlsruhe Institute of Technology" cert.Country=DE cert.Locality=Karlsruhe cert.State=Baden-Wuerttemberg GCID=MY-SITE WF-GCID=MY-WORKFLOW Port.GATEWAY=8080 CAMODE=INSTALLCSR
+
+and the install continues. Those two commands can also be rerun in this order to regenerate the certificates after they expire.
+
+Make sure your CA did not remove your supplied SubjectAltName in the certificates by checking
+    openssl x509 -in anyofthe.pem -noout -text
+
 ## Using a existing CA
 In this case you need to have the following filestructure in your directory.CA=CA_DIR directory.
 * CADIR/cacert.pem contains the CA certificates.
