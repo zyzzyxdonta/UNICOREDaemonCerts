@@ -53,6 +53,7 @@ Send the CSRs to your CA and after you get your PEMs back, run the same command 
 and the install continues. Those two commands can also be rerun in this order to regenerate the certificates after they expire.
 
 Make sure your CA did not remove your supplied SubjectAltName in the certificates by checking
+
     openssl x509 -in anyofthe.pem -noout -text
 
 ## Using a existing CA
