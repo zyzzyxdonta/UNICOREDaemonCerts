@@ -146,6 +146,11 @@ class DaemonCerts(object):
                 ("container.security.attributes.VO-PULL.configurationFile","conf/vo.config"),
                 ("container.security.attributes.order", "XUUDB" if self.dcs.get_value("AUTHSERVER") == "XUUDB" else "VO-PULL")
             ],
+            get_path("unicorex", "jmxremote.password"):
+            [
+                ("monitorRole", self.random_string(16)),
+                ("controlRole", self.random_string(16))
+            ],
             get_path("gateway", "connections.properties"):
             [
                 ("DEMO-SITE", "<Comment>"),
@@ -159,6 +164,11 @@ class DaemonCerts(object):
                 #("gateway.hostname", "https://%s:%d" % (self.dcs.get_value("Domains.GATEWAY"),self.dcs.get_value("Port.GATEWAY"))),
                 ("gateway.hostname", "https://0.0.0.0:%d" % (self.dcs.get_value("Port.GATEWAY"))),
                 ("gateway.httpServer.requireClientAuthn", "false")
+            ],
+            get_path("gateway", "jmxremote.password"):
+            [
+                ("monitorRole", self.random_string(16)),
+                ("controlRole", self.random_string(16))
             ],
             get_path("gateway", "security.properties"):
             [
@@ -182,6 +192,11 @@ class DaemonCerts(object):
             [
                 ("xuudb.address", "https://%s:34463" % self.dcs.get_value("Domains.XUUDB")),
                 ("xuudb.credential.password", self.dcs.get_value("KeystorePass.XUUDB"))
+            ],
+            get_path("xuudb", "jmxremote.password"):
+            [
+                ("monitorRole", self.random_string(16)),
+                ("controlRole", self.random_string(16))
             ],
             get_path("unity", "pki.properties"):
             [
@@ -218,6 +233,11 @@ class DaemonCerts(object):
                 ("container.security.attributes.VO-PULL.configurationFile","conf/vo.config"),
                 ("container.security.attributes.order", "XUUDB" if self.dcs.get_value("AUTHSERVER") == "XUUDB" else "VO-PULL")
             ],
+            get_path("workflow", "jmxremote.password"):
+            [
+                ("monitorRole", self.random_string(16)),
+                ("controlRole", self.random_string(16))
+            ],
             get_path("registry", "uas.config"):
             [
                 ("container.security.attributes.XUUDB.xuudbHost",
@@ -233,6 +253,16 @@ class DaemonCerts(object):
                 ("container.security.attributes.VO-PULL.class","eu.unicore.uas.security.vo.SAMLPullAuthoriser"),
                 ("container.security.attributes.VO-PULL.configurationFile","conf/vo.config"),
                 ("container.security.attributes.order", "XUUDB" if self.dcs.get_value("AUTHSERVER") == "XUUDB" else "VO-PULL")
+            ],
+            get_path("registry", "jmxremote.password"):
+            [
+                ("monitorRole", self.random_string(16)),
+                ("controlRole", self.random_string(16))
+            ],
+            get_path("servorch", "jmxremote.password"):
+            [
+                ("monitorRole", self.random_string(16)),
+                ("controlRole", self.random_string(16))
             ],
             get_path("servorch", "uas.config"):
             [
