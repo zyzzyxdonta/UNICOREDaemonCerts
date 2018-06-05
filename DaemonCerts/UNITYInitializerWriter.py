@@ -28,7 +28,7 @@ import pl.edu.icm.unity.types.basic.IdentityTaV;
 import groovy.transform.Field
 
 
-@Field final String CN_ATTR = "cn"
+@Field final String CN_ATTR = "name"
 
 
 if (!isColdStart)
@@ -59,7 +59,7 @@ try
 void addServer(String dn, String cn)
 {
         IdentityParam unicoreClient = new IdentityParam(X500Identity.ID, dn);
-        Identity unicoreClientA = entityManagement.addEntity(unicoreClient, "Certificate",
+        Identity unicoreClientA = entityManagement.addEntity(unicoreClient, "Certificate requirement",
                         EntityState.valid, false);
         EntityParam Server = new EntityParam(unicoreClientA.getEntityId());
         groupsManagement.addMemberFromParent("/unicore", Server);
