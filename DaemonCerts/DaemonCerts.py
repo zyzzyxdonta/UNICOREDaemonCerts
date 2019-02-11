@@ -50,7 +50,6 @@ class DaemonCerts(object):
         get_path = lambda daemon, filename : "%s%s%s%s%s%s%s" %(unipath,sep,daemon,sep,"conf",sep,filename)
         # Dict { filename : { "values" : [ ("XPATH","VALUE") , ("XPATH","VALUE"), ... ]
         #                    "attrib" : [ ("XPATH","ATTRIB",VALUE) , ("XPATH","ATTRIB","VALUE"), ... ]
-        # TODO: We are still missing lifetime infinity!
         self.vo_paths = [
             (self.dcs.get_value("GCID"),get_path("unicorex", "vo.config")),
             ("SERVORCH",get_path("servorch", "vo.config")),
@@ -329,7 +328,7 @@ class DaemonCerts(object):
         help_message="""
    ---- UNICORE Daemon Cert Generator ----
         
-       Copyright Nanomatch GmbH 2017
+       Copyright Nanomatch GmbH 2019
 
    Usage:
    CreateDaemonCerts.py parameter2=value2 parameter2=value2. A list of all parameters follows:
@@ -589,15 +588,22 @@ class DaemonCerts(object):
         if os.path.isfile(simpleidb):
             shutil.move(simpleidb,sidbdir)
 
-        filespacedir = join(self.dcs.get_value("directory.userfiles"),"storage")
-        mkdir_p(filespacedir)
-        os.chmod(filespacedir,0o1777)
-        storagefactorydir = join(self.dcs.get_value("directory.userfiles"),"storage-factory")
-        mkdir_p(storagefactorydir)
-        os.chmod(storagefactorydir,0o1777)
-        filespacedir = join(self.dcs.get_value("directory.userfiles"),"FILESPACE")
-        mkdir_p(filespacedir)
-        os.chmod(filespacedir,0o1777)
+        userfiles_directory = self.dcs.get_value("directory.userfiles")
+        if "$" in userfiles_directory:
+            print("Detected variable in userfiles_directory. Will not generate the directories. Please make sure this variable does not contain braces like these: {}")
+            uaspath = get_path("unicorex", "uas.config")
+            self.create_add_change_plain(uaspath, "coreServices.sms.factory.DEFAULT.type", "VARIABLE")
+            self.create_add_change_plain(uaspath, "coreServices.defaultsms.type","VARIABLE")
+        else:
+            filespacedir = join(self.dcs.get_value("directory.userfiles"),"storage")
+            mkdir_p(filespacedir)
+            os.chmod(filespacedir,0o1777)
+            storagefactorydir = join(self.dcs.get_value("directory.userfiles"),"storage-factory")
+            mkdir_p(storagefactorydir)
+            os.chmod(storagefactorydir,0o1777)
+            filespacedir = join(self.dcs.get_value("directory.userfiles"),"FILESPACE")
+            mkdir_p(filespacedir)
+            os.chmod(filespacedir,0o1777)
 
     def create_add_change_plain(self,filename,key,value):
         print("File: <%s>, Changing value of key <%s> to <%s>" % (filename, key, value))
