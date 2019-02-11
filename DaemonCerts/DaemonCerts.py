@@ -48,6 +48,8 @@ class DaemonCerts(object):
         unipath = self.dcs.get_value("directory.unicore")
         #builds: unicore_path/daemon_name/conf/filename:
         get_path = lambda daemon, filename : "%s%s%s%s%s%s%s" %(unipath,sep,daemon,sep,"conf",sep,filename)
+        # Making this function available later in a hacky way
+        self._get_path = get_path 
         # Dict { filename : { "values" : [ ("XPATH","VALUE") , ("XPATH","VALUE"), ... ]
         #                    "attrib" : [ ("XPATH","ATTRIB",VALUE) , ("XPATH","ATTRIB","VALUE"), ... ]
         self.vo_paths = [
@@ -591,7 +593,7 @@ class DaemonCerts(object):
         userfiles_directory = self.dcs.get_value("directory.userfiles")
         if "$" in userfiles_directory:
             print("Detected variable in userfiles_directory. Will not generate the directories. Please make sure this variable does not contain braces like these: {}")
-            uaspath = get_path("unicorex", "uas.config")
+            uaspath = self._get_path("unicorex", "uas.config")
             self.create_add_change_plain(uaspath, "coreServices.sms.factory.DEFAULT.type", "VARIABLE")
             self.create_add_change_plain(uaspath, "coreServices.defaultsms.type","VARIABLE")
         else:
