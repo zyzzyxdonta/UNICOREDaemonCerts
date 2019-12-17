@@ -1,5 +1,7 @@
 # UNICOREDaemonCerts
 
+IMPORTANT: Since the release of UNICORE 8, this is installer is outdated. Please don't use it anymore, until it is completely updated.
+
 ## Description
 UNICOREDaemonCerts creates the certificates and private keys for standard UNICORE installations. The output paths and keystore passes are set to the ones used in a standard UNICORE install.
 
