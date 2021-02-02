@@ -776,7 +776,10 @@ class DaemonCerts(object):
         else:
             key = crypto.PKey()
             key.generate_key(crypto.TYPE_RSA, 2048)
-        pfx = crypto.PKCS12Type()
+        try:
+            pfx = crypto.PKCS12()
+        except AttributeError:
+            pfx = crypto.PKCS12Type()
         pfx.set_privatekey(key)
         #pfx.set_certificate(cert)
         pfxdata = pfx.export(passphrase)
@@ -849,7 +852,10 @@ class DaemonCerts(object):
             cert.sign(ca_key, 'sha256')
             self.serial += 1
 
-        pfx = crypto.PKCS12Type()
+        try:
+            pfx = crypto.PKCS12()
+        except AttributeError:
+            pfx = crypto.PKCS12Type()
         pfx.set_privatekey(key)
         pfx.set_certificate(cert)
         pfxdata = pfx.export(passphrase)
